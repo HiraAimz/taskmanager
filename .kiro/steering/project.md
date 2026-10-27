@@ -40,3 +40,7 @@
 - Do not modify files unrelated to the current task
 - Never run migrate:fresh or destructive commands outside the local environment
 - If a requirement is ambiguous, ask instead of guessing
+- Do not create unnecessary markdown files (no summary, notes, changelog, or
+  "implementation complete" .md files). Only create .md files I explicitly ask for
+  or that the spec workflow requires (requirements.md, design.md, tasks.md).
+  Put explanations in the chat reply instead.

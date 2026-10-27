@@ -1,7 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
+use App\Models\Workspace;
+use App\Policies\WorkspacePolicy;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +25,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Prevent lazy loading in non-production environments
+        Model::preventLazyLoading(! app()->isProduction());
+
+        // Register policies
+        Gate::policy(Workspace::class, WorkspacePolicy::class);
+        Gate::policy(\App\Models\Project::class, \App\Models\Policies\ProjectPolicy::class);
+        Gate::policy(\App\Models\Task::class, \App\Models\Policies\TaskPolicy::class);
+        Gate::policy(\App\Models\Status::class, \App\Models\Policies\StatusPolicy::class);
     }
 }

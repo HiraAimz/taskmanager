@@ -1,0 +1,25 @@
+=====================================================
+COPY AND PASTE THESE COMMANDS ONE BY ONE
+=====================================================
+
+composer require spatie/laravel-permission
+
+php artisan vendor:publish --provider="Spatie\Permission\PermissionServiceProvider"
+
+composer require spatie/laravel-activitylog
+
+php artisan vendor:publish --provider="Spatie\Activitylog\ActivitylogServiceProvider" --tag="activitylog-migrations"
+
+composer require pestphp/pest --dev --with-all-dependencies
+
+composer require pestphp/pest-plugin-laravel --dev --with-all-dependencies
+
+php artisan migrate
+
+php artisan config:clear
+
+php artisan db:seed --class=RolePermissionSeeder
+
+=====================================================
+DONE! After this, continue with setup from QUICK_START.md
+=====================================================
