@@ -25,7 +25,7 @@ class TaskBoard extends Component
     public function mount(Project $project): void
     {
         $this->authorize('view', $project);
-        $this->project = $project;
+        $this->project = $project->loadMissing(['workspace.projects']);
     }
 
     #[On('task-created')]
@@ -40,7 +40,7 @@ class TaskBoard extends Component
     {
         $task = $this->project->tasks()->findOrFail($taskId);
 
-        $this->authorize('update', $task);
+        $this->authorize('changeStatus', $task);
 
         $action = new UpdateTaskStatus();
         $action->execute($task, $statusId);
@@ -63,7 +63,7 @@ class TaskBoard extends Component
         $query = $this->project->statuses()
             ->with([
                 'tasks' => function ($query) {
-                    $query->with(['assignee', 'assignees', 'tags', 'checklistItems'])
+                    $query->with(['assignee', 'assignees', 'tags', 'checklistItems', 'comments'])
                         ->orderBy('position');
 
                     // Apply filters
@@ -99,10 +99,12 @@ class TaskBoard extends Component
             ->flatten()
             ->unique('id');
 
+        $this->project->loadMissing(['workspace.projects']);
+
         return view('livewire.tasks.task-board', [
             'statuses' => $statuses,
             'workspaceMembers' => $workspaceMembers,
             'availableTags' => $availableTags,
-        ])->layout('components.layouts.app');
+        ])->layout('components.layouts.app', ['project' => $this->project]);
     }
 }

@@ -14,9 +14,7 @@ class WorkspacePolicy
      */
     public function viewAny(User $user): bool
     {
-        // Admins can view all workspaces
-        // Non-admins rely on query scoping in the controller
-        return $user->hasRole('Admin');
+        return $user->hasRole('Admin') || $user->can('workspace.view') || $user->can('manage-workspaces');
     }
 
     /**
@@ -24,10 +22,11 @@ class WorkspacePolicy
      */
     public function view(User $user, Workspace $workspace): bool
     {
-        // Admins can view any workspace
-        // Users can view workspaces they belong to
-        return $user->hasRole('Admin') 
-            || $user->workspaces()->where('workspaces.id', $workspace->id)->exists();
+        if ($user->hasRole('Admin')) {
+            return true;
+        }
+
+        return $user->workspaces()->where('workspaces.id', $workspace->id)->exists();
     }
 
     /**
@@ -35,7 +34,9 @@ class WorkspacePolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasRole('Admin');
+        return $user->hasRole('Admin') 
+            || $user->can('workspace.create') 
+            || $user->can('manage-workspaces');
     }
 
     /**
@@ -43,7 +44,12 @@ class WorkspacePolicy
      */
     public function update(User $user, Workspace $workspace): bool
     {
-        return $user->hasRole('Admin');
+        if ($user->hasRole('Admin') || $workspace->owner_id === $user->id) {
+            return true;
+        }
+
+        return ($user->can('workspace.edit') || $user->can('manage-workspaces'))
+            && $user->workspaces()->where('workspaces.id', $workspace->id)->exists();
     }
 
     /**
@@ -51,7 +57,12 @@ class WorkspacePolicy
      */
     public function delete(User $user, Workspace $workspace): bool
     {
-        return $user->hasRole('Admin');
+        if ($user->hasRole('Admin') || $workspace->owner_id === $user->id) {
+            return true;
+        }
+
+        return $user->can('workspace.delete')
+            && $user->workspaces()->where('workspaces.id', $workspace->id)->exists();
     }
 
     /**
@@ -59,7 +70,12 @@ class WorkspacePolicy
      */
     public function addMember(User $user, Workspace $workspace): bool
     {
-        return $user->hasRole('Admin');
+        if ($user->hasRole('Admin') || $workspace->owner_id === $user->id) {
+            return true;
+        }
+
+        return ($user->can('workspace.manage_members') || $user->can('manage-workspaces'))
+            && $user->workspaces()->where('workspaces.id', $workspace->id)->exists();
     }
 
     /**
@@ -67,6 +83,6 @@ class WorkspacePolicy
      */
     public function removeMember(User $user, Workspace $workspace): bool
     {
-        return $user->hasRole('Admin');
+        return $this->addMember($user, $workspace);
     }
 }

@@ -30,7 +30,7 @@ class TaskDetail extends Component
 
     public function mount(int $taskId): void
     {
-        $this->task = Task::with(['assignee', 'status', 'tags', 'project.statuses', 'project.workspace.members', 'checklistItems', 'comments.user', 'attachments.user'])
+        $this->task = Task::with(['assignee', 'assignees', 'status', 'tags', 'project.statuses', 'project.workspace.members', 'checklistItems', 'comments.user', 'attachments.user'])
             ->findOrFail($taskId);
 
         $this->authorize('view', $this->task);
@@ -73,7 +73,7 @@ class TaskDetail extends Component
         $this->task->assignees()->sync($this->selectedAssignees);
 
         $this->dispatch('task-updated');
-        $this->task = $this->task->fresh();
+        $this->task = $this->task->fresh(['assignee', 'assignees', 'status', 'tags', 'project.statuses', 'project.workspace.members', 'checklistItems', 'comments.user', 'attachments.user']);
 
         session()->flash('message', 'Task updated successfully!');
     }
@@ -89,6 +89,28 @@ class TaskDetail extends Component
         $this->dispatch('close-modal');
     }
 
+    public function removeCollaborator(int $userId): void
+    {
+        $this->authorize('update', $this->task);
+
+        $this->selectedAssignees = array_values(array_filter($this->selectedAssignees, fn ($id) => (int) $id !== $userId));
+        $this->task->assignees()->sync($this->selectedAssignees);
+        $this->dispatch('task-updated');
+    }
+
+    public function toggleCollaborator(int $userId): void
+    {
+        $this->authorize('update', $this->task);
+
+        if (in_array($userId, $this->selectedAssignees)) {
+            $this->removeCollaborator($userId);
+        } else {
+            $this->selectedAssignees[] = $userId;
+            $this->task->assignees()->sync($this->selectedAssignees);
+            $this->dispatch('task-updated');
+        }
+    }
+
     public function close(): void
     {
         $this->dispatch('close-modal');
@@ -96,6 +118,8 @@ class TaskDetail extends Component
 
     public function render()
     {
+        $this->task->loadMissing(['assignee', 'assignees', 'status', 'tags', 'project.statuses', 'project.workspace.members', 'checklistItems', 'comments.user', 'attachments.user']);
+
         $workspaceMembers = User::whereHas('workspaces', function ($q) {
             $q->where('workspaces.id', $this->task->project->workspace_id);
         })->get();

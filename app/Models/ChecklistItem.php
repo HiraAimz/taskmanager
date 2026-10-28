@@ -14,14 +14,14 @@ class ChecklistItem extends Model
     protected $fillable = [
         'task_id',
         'title',
-        'is_done',
+        'is_completed',
         'position',
     ];
 
     protected function casts(): array
     {
         return [
-            'is_done' => 'boolean',
+            'is_completed' => 'boolean',
         ];
     }
 

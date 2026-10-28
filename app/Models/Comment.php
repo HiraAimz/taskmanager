@@ -19,7 +19,18 @@ class Comment extends Model
         'commentable_id',
         'user_id',
         'body',
+        'content',
     ];
+
+    public function getContentAttribute(): ?string
+    {
+        return $this->attributes['body'] ?? null;
+    }
+
+    public function setContentAttribute($value): void
+    {
+        $this->attributes['body'] = $value;
+    }
 
     public function getActivitylogOptions(): LogOptions
     {

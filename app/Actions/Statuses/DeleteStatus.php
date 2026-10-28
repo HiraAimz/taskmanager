@@ -15,7 +15,7 @@ class DeleteStatus
 
         if ($taskCount > 0 && $moveToStatusId === null) {
             throw ValidationException::withMessages([
-                'status' => "Cannot delete status with {$taskCount} tasks. Please move them to another status first.",
+                'status' => "Cannot delete status with existing tasks. Please move them to another status first.",
             ]);
         }
 
@@ -32,5 +32,10 @@ class DeleteStatus
         }
 
         $status->delete();
+    }
+
+    public function execute(Status $status, ?int $moveToStatusId = null): void
+    {
+        $this->handle($status, $moveToStatusId);
     }
 }

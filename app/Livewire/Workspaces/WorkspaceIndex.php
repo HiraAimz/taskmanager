@@ -15,8 +15,8 @@ class WorkspaceIndex extends Component
     public function render()
     {
         $query = auth()->user()->hasRole('Admin')
-            ? Workspace::with('owner')
-            : auth()->user()->workspaces()->with('owner');
+            ? Workspace::with(['owner', 'projects'])->withCount('projects')
+            : auth()->user()->workspaces()->with(['owner', 'projects'])->withCount('projects');
 
         return view('livewire.workspaces.workspace-index', [
             'workspaces' => $query->paginate(15),

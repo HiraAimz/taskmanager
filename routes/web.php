@@ -3,9 +3,13 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AttachmentController;
+use App\Livewire\Admin\RoleCreate;
+use App\Livewire\Admin\RoleEdit;
+use App\Livewire\Admin\RoleIndex;
 use App\Livewire\Admin\UserCreate;
 use App\Livewire\Admin\UserEdit;
 use App\Livewire\Admin\UserIndex;
+use App\Livewire\Messages\DirectMessages;
 use App\Livewire\Projects\ProjectCreate;
 use App\Livewire\Projects\ProjectEdit;
 use App\Livewire\Projects\ProjectIndex;
@@ -30,11 +34,35 @@ Route::get('/dashboard', function () {
     return redirect()->route('workspaces.index');
 })->middleware('auth')->name('dashboard');
 
-// Admin routes - Admin role only
-Route::middleware(['auth', 'role:Admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/users', UserIndex::class)->name('users');
-    Route::get('/users/create', UserCreate::class)->name('users.create');
-    Route::get('/users/{user}/edit', UserEdit::class)->name('users.edit');
+// Direct messaging binding & route
+Route::model('role', \Spatie\Permission\Models\Role::class);
+
+// Admin routes - Admin role or granular permissions
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/users', UserIndex::class)
+        ->middleware('role_or_permission:Admin|user.view|manage-users')
+        ->name('users');
+    Route::get('/users/create', UserCreate::class)
+        ->middleware('role_or_permission:Admin|user.create|manage-users')
+        ->name('users.create');
+    Route::get('/users/{user}/edit', UserEdit::class)
+        ->middleware('role_or_permission:Admin|user.edit|user.manage_roles|manage-users')
+        ->name('users.edit');
+
+    Route::get('/roles', RoleIndex::class)
+        ->middleware('role_or_permission:Admin|role.view|manage-users')
+        ->name('roles');
+    Route::get('/roles/create', RoleCreate::class)
+        ->middleware('role_or_permission:Admin|role.create|manage-users')
+        ->name('roles.create');
+    Route::get('/roles/{role}/edit', RoleEdit::class)
+        ->middleware('role_or_permission:Admin|role.edit|manage-users')
+        ->name('roles.edit');
+});
+
+// Direct Messages
+Route::middleware(['auth', 'role_or_permission:Admin|message.access'])->prefix('messages')->name('messages.')->group(function () {
+    Route::get('/{conversation?}', DirectMessages::class)->name('index');
 });
 
 // Workspace routes - authenticated users with policy checks

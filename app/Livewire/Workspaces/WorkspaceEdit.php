@@ -22,7 +22,7 @@ class WorkspaceEdit extends Component
     {
         $this->authorize('update', $workspace);
 
-        $this->workspace = $workspace;
+        $this->workspace = $workspace->load(['users', 'owner']);
         $this->name = $workspace->name;
         $this->description = $workspace->description ?? '';
     }
@@ -65,11 +65,22 @@ class WorkspaceEdit extends Component
         $this->authorize('removeMember', $this->workspace);
 
         $this->workspace->users()->detach($userId);
-        session()->flash('success', 'Member removed successfully.');
+
+        // Revoke access to all projects in this workspace as well
+        $projectIds = $this->workspace->projects()->pluck('id');
+        if ($projectIds->isNotEmpty()) {
+            \Illuminate\Support\Facades\DB::table('project_user')
+                ->whereIn('project_id', $projectIds)
+                ->where('user_id', $userId)
+                ->delete();
+        }
+
+        session()->flash('success', 'Member removed successfully from workspace and its projects.');
     }
 
     public function render()
     {
+        $this->workspace->loadMissing(['users', 'owner']);
         $currentMemberIds = $this->workspace->users->pluck('id')->toArray();
         $availableUsers = User::whereNotIn('id', $currentMemberIds)->get();
 

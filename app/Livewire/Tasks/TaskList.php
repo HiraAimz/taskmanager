@@ -32,7 +32,7 @@ class TaskList extends Component
     public function mount(Project $project): void
     {
         $this->authorize('view', $project);
-        $this->project = $project;
+        $this->project = $project->loadMissing(['workspace.projects', 'statuses']);
     }
 
     #[On('task-created')]
@@ -53,6 +53,19 @@ class TaskList extends Component
         }
     }
 
+    public ?string $search = '';
+
+    public function updateTaskStatus(int $taskId, int $statusId): void
+    {
+        $task = $this->project->tasks()->findOrFail($taskId);
+        $this->authorize('changeStatus', $task);
+
+        $action = new \App\Actions\Tasks\UpdateTaskStatus();
+        $action->execute($task, $statusId);
+
+        $this->dispatch('task-updated');
+    }
+
     public function selectTask(int $taskId): void
     {
         $this->selectedTaskId = $taskId;
@@ -66,11 +79,18 @@ class TaskList extends Component
     public function render()
     {
         $query = $this->project->tasks()
-            ->with(['assignee', 'status', 'tags', 'checklistItems']);
+            ->with(['assignee', 'assignees', 'status', 'tags', 'checklistItems', 'comments']);
+
+        if (! empty($this->search)) {
+            $query->where('title', 'like', '%'.$this->search.'%');
+        }
 
         // Apply filters
         if ($this->filterAssignee) {
-            $query->where('assignee_id', $this->filterAssignee);
+            $query->where(function ($q) {
+                $q->where('assignee_id', $this->filterAssignee)
+                    ->orWhereHas('assignees', fn ($sq) => $sq->where('users.id', $this->filterAssignee));
+            });
         }
 
         if ($this->filterPriority) {
@@ -91,10 +111,13 @@ class TaskList extends Component
             $q->where('workspaces.id', $this->project->workspace_id);
         })->get();
 
+        $this->project->loadMissing(['workspace.projects', 'statuses']);
+
         return view('livewire.tasks.task-list', [
             'tasks' => $tasks,
             'workspaceMembers' => $workspaceMembers,
             'statuses' => $this->project->statuses,
-        ])->layout('components.layouts.app');
+            'project' => $this->project,
+        ])->layout('components.layouts.app', ['project' => $this->project]);
     }
 }

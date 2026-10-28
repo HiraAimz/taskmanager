@@ -16,7 +16,7 @@ return new class extends Migration
                 ->constrained('tasks')
                 ->cascadeOnDelete();
             $table->string('title');
-            $table->boolean('is_done')->default(false);
+            $table->boolean('is_completed')->default(false);
             $table->integer('position')->default(0);
             $table->timestamps();
 

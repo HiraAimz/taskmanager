@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Actions\DeleteStatus;
+use App\Actions\Statuses\DeleteStatus;
 use App\Models\Project;
 use App\Models\Status;
 use App\Models\Task;

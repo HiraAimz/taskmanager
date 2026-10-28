@@ -1,46 +1,109 @@
-<div class="p-6">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">User Management</h2>
-        <a href="{{ route('admin.users.create') }}" 
-           class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
-            Create User
-        </a>
-    </div>
+<div class="h-full flex flex-col p-6 bg-[#f7f8fa] dark:bg-[#141517]">
+    <div class="max-w-7xl mx-auto w-full space-y-6">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
+                    <span>👥 User & Role Management</span>
+                </h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Manage team member access and assign system roles. Public registration is disabled.
+                </p>
+            </div>
 
-    @if (session('success'))
-        <div class="mb-4 p-4 bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 rounded-md">
-            {{ session('success') }}
+            @if(auth()->user()->hasRole('Admin') || auth()->user()->can('user.create') || auth()->user()->can('manage-users'))
+            <a href="{{ route('admin.users.create') }}" 
+               class="inline-flex items-center gap-1.5 px-4 py-2 bg-clickup-gradient text-white text-xs font-semibold rounded-xl shadow-sm hover:opacity-95 transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                Create User
+            </a>
+            @endif
         </div>
-    @endif
 
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-gray-900">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Roles</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                @foreach($users as $user)
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $user->name }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ $user->email }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {{ $user->roles->pluck('name')->join(', ') }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <a href="{{ route('admin.users.edit', $user) }}" class="text-blue-600 hover:text-blue-900 dark:text-blue-400">Edit</a>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
+        @if (session('success'))
+            <div class="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                ✓ {{ session('success') }}
+            </div>
+        @endif
 
-    <div class="mt-4">
-        {{ $users->links() }}
+        <!-- Users Table Card -->
+        <div class="bg-white dark:bg-[#1a1b1e] rounded-2xl shadow-xs border border-slate-200/80 dark:border-[#2a2b2f] overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50/80 dark:bg-[#202126] border-b border-slate-200 dark:border-[#2a2b2f] text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                            <th class="px-6 py-3.5">User</th>
+                            <th class="px-6 py-3.5">Email</th>
+                            <th class="px-6 py-3.5">Role</th>
+                            <th class="px-6 py-3.5 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 dark:divide-[#25262c] text-xs">
+                        @foreach($users as $user)
+                            <tr class="hover:bg-purple-50/30 dark:hover:bg-[#222329] transition-colors">
+                                <!-- User Name & Avatar -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-clickup-gradient flex items-center justify-center text-white text-xs font-bold shadow-xs">
+                                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                                        </div>
+                                        <span class="font-bold text-slate-900 dark:text-white">
+                                            {{ $user->name }}
+                                        </span>
+                                    </div>
+                                </td>
+
+                                <!-- Email -->
+                                <td class="px-6 py-4 whitespace-nowrap font-medium text-slate-600 dark:text-slate-300">
+                                    {{ $user->email }}
+                                </td>
+
+                                <!-- Role Badge -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @php
+                                        $roleName = $user->roles->first()->name ?? 'No Role';
+                                    @endphp
+                                    @if($roleName === 'Admin')
+                                        <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                                            👑 Admin
+                                        </span>
+                                    @elseif($roleName === 'Manager')
+                                        <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                            💼 Manager
+                                        </span>
+                                    @elseif($roleName === 'Member')
+                                        <span class="px-2.5 py-1 text-[11px] font-medium rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                            👤 Member
+                                        </span>
+                                    @else
+                                        <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300 border border-purple-200 dark:border-purple-700">
+                                            🛡️ {{ $roleName }}
+                                        </span>
+                                    @endif
+                                </td>
+
+                                <!-- Actions -->
+                                <td class="px-6 py-4 whitespace-nowrap text-right">
+                                    @if(auth()->user()->hasRole('Admin') || auth()->user()->can('user.edit') || auth()->user()->can('manage-users'))
+                                    <a href="{{ route('admin.users.edit', $user) }}" 
+                                       class="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 hover:underline">
+                                        Edit
+                                    </a>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            @if($users->hasPages())
+                <div class="px-6 py-3 border-t border-slate-200 dark:border-[#2a2b2f] bg-slate-50/50 dark:bg-[#1a1b1e]">
+                    {{ $users->links() }}
+                </div>
+            @endif
+        </div>
+
     </div>
 </div>

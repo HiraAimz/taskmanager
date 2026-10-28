@@ -25,7 +25,7 @@ class StatusManagement extends Component
     public function mount(Project $project): void
     {
         $this->authorize('view', $project);
-        $this->project = $project;
+        $this->project = $project->loadMissing(['workspace.projects']);
     }
 
     public function addStatus(): void
@@ -121,8 +121,11 @@ class StatusManagement extends Component
 
     public function render()
     {
+        $this->project->loadMissing(['workspace.projects']);
+
         return view('livewire.projects.status-management', [
             'statuses' => $this->project->statuses()->orderBy('position')->withCount('tasks')->get(),
-        ])->layout('components.layouts.app');
+            'project' => $this->project,
+        ])->layout('components.layouts.app', ['project' => $this->project]);
     }
 }

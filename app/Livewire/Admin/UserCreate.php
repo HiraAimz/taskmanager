@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Livewire\Admin;
 
 use App\Actions\Users\CreateUser;
-use App\Enums\Role;
 use Livewire\Component;
+use Spatie\Permission\Models\Role;
 
 class UserCreate extends Component
 {
@@ -16,11 +16,16 @@ class UserCreate extends Component
 
     public string $password = '';
 
-    public string $role = '';
+    public string $role = 'Member';
 
     public function mount(): void
     {
-        abort_unless(auth()->user()->can('manage-users'), 403);
+        abort_unless(
+            auth()->user()->hasRole('Admin') || 
+            auth()->user()->can('user.create') || 
+            auth()->user()->can('manage-users'), 
+            403
+        );
     }
 
     public function rules(): array
@@ -29,13 +34,18 @@ class UserCreate extends Component
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
-            'role' => 'required|in:Admin,Manager,Member',
+            'role' => 'required|exists:roles,name',
         ];
     }
 
     public function save(): mixed
     {
-        abort_unless(auth()->user()->can('manage-users'), 403);
+        abort_unless(
+            auth()->user()->hasRole('Admin') || 
+            auth()->user()->can('user.create') || 
+            auth()->user()->can('manage-users'), 
+            403
+        );
 
         $this->validate();
 
@@ -55,7 +65,7 @@ class UserCreate extends Component
     public function render()
     {
         return view('livewire.admin.user-create', [
-            'roles' => Role::cases(),
+            'roles' => Role::orderBy('name')->get(),
         ])->layout('components.layouts.app');
     }
 }

@@ -1,79 +1,47 @@
-<div>
-    <x-page-header
-        title="Create Workspace"
-        description="Workspaces help you organize projects and collaborate with your team"
-    >
-        <x-slot:breadcrumbs>
-            <a href="{{ route('workspaces.index') }}" class="hover:text-foreground transition-colors">
-                Workspaces
+<div class="h-full flex flex-col p-6 bg-[#f7f8fa] dark:bg-[#141517]">
+    <div class="max-w-xl mx-auto w-full space-y-6">
+        <div>
+            <a href="{{ route('workspaces.index') }}" class="text-xs text-slate-500 hover:text-purple-600 transition-colors">
+                ← Back to Workspaces
             </a>
-            <span class="text-muted-foreground">/</span>
-            <span class="text-muted-foreground">Create</span>
-        </x-slot:breadcrumbs>
-    </x-page-header>
+            <h1 class="text-2xl font-bold text-slate-900 dark:text-white mt-1">Create Workspace</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Set up a space for your team to organize projects, lists, and tasks.</p>
+        </div>
 
-    <div class="max-w-2xl mx-auto">
-        <x-card>
-            <form wire:submit="save" class="space-y-6">
-                <x-form-section
-                    title="Workspace Details"
-                    description="Basic information about your workspace"
-                >
-                    <x-input
-                        label="Workspace Name"
-                        id="name"
-                        wire:model="name"
-                        placeholder="e.g. Marketing Team"
-                        required
-                        error="{{ $errors->first('name') }}"
-                        helper="Choose a descriptive name for your workspace"
-                    >
-                        <x-slot:icon>
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                            </svg>
-                        </x-slot:icon>
-                    </x-input>
+        <div class="bg-white dark:bg-[#1a1b1e] rounded-2xl border border-slate-200/80 dark:border-[#2a2b2f] p-6 shadow-xs">
+            <form wire:submit="save" class="space-y-4">
+                <div>
+                    <label for="name" class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
+                        Workspace Name *
+                    </label>
+                    <input type="text" id="name" wire:model="name" 
+                           class="w-full text-xs font-medium bg-slate-50 dark:bg-[#16171a] border border-slate-200 dark:border-[#2f3036] rounded-xl px-3.5 py-2.5 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-[#16171a] focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
+                           placeholder="e.g. Design & Creative Agency" required autofocus>
+                    @error('name') <span class="text-rose-600 text-xs font-medium">{{ $message }}</span> @enderror
+                </div>
 
-                    <x-textarea
-                        label="Description"
-                        id="description"
-                        wire:model="description"
-                        placeholder="What is this workspace for? Who will be using it?"
-                        rows="5"
-                        error="{{ $errors->first('description') }}"
-                        helper="Add details about the purpose and goals of this workspace"
-                        show-counter
-                    />
-                </x-form-section>
+                <div>
+                    <label for="description" class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
+                        Description
+                    </label>
+                    <textarea id="description" wire:model="description" rows="3"
+                              class="w-full text-xs bg-slate-50 dark:bg-[#16171a] border border-slate-200 dark:border-[#2f3036] rounded-xl p-3 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-[#16171a] focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all"
+                              placeholder="Brief description of the workspace purpose..."></textarea>
+                    @error('description') <span class="text-rose-600 text-xs font-medium">{{ $message }}</span> @enderror
+                </div>
 
-                <x-alert variant="info">
-                    <strong class="font-medium">What's next?</strong>
-                    <p class="mt-1">After creating your workspace, you can add team members, create projects, and start managing tasks.</p>
-                </x-alert>
-
-                <div class="flex items-center justify-end gap-3 pt-6 border-t border-border">
-                    <x-button
-                        variant="ghost"
-                        tag="a"
-                        href="{{ route('workspaces.index') }}"
-                    >
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-[#25262c]">
+                    <a href="{{ route('workspaces.index') }}" 
+                       class="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#28292e] rounded-xl transition-colors">
                         Cancel
-                    </x-button>
-
-                    <x-button
-                        type="submit"
-                        loading-target="save"
-                    >
-                        <x-slot:icon>
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                        </x-slot:icon>
+                    </a>
+                    <button type="submit" 
+                            class="inline-flex items-center gap-1.5 px-5 py-2 bg-clickup-gradient text-white text-xs font-semibold rounded-xl shadow-sm hover:opacity-95 transition-all">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
                         Create Workspace
-                    </x-button>
+                    </button>
                 </div>
             </form>
-        </x-card>
+        </div>
     </div>
 </div>

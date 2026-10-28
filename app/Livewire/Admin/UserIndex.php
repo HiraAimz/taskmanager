@@ -14,7 +14,12 @@ class UserIndex extends Component
 
     public function mount(): void
     {
-        abort_unless(auth()->user()->can('manage-users'), 403);
+        abort_unless(
+            auth()->user()->hasRole('Admin') || 
+            auth()->user()->can('user.view') || 
+            auth()->user()->can('manage-users'), 
+            403
+        );
     }
 
     public function render()

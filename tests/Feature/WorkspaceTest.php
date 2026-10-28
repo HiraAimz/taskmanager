@@ -54,3 +54,22 @@ test('member can see their own workspace', function () {
         ->assertOk()
         ->assertSee($workspace->name);
 });
+
+test('workspace index renders properly with projects without lazy loading violation', function () {
+    $user = User::factory()->create();
+    $user->assignRole('Admin');
+
+    $workspace = Workspace::factory()->create(['owner_id' => $user->id]);
+    $workspace->users()->attach($user->id);
+
+    \App\Models\Project::factory()->count(3)->create([
+        'workspace_id' => $workspace->id,
+        'owner_id' => $user->id,
+    ]);
+
+    $this->actingAs($user)
+        ->get('/workspaces')
+        ->assertOk()
+        ->assertSee($workspace->name)
+        ->assertSee('3 projects');
+});

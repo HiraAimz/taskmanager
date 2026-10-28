@@ -22,6 +22,10 @@ class TaskQuickCreate extends Component
 
     public string $description = '';
 
+    public string $priority = 'normal';
+
+    public ?string $dueDate = null;
+
     #[On('open-quick-create')]
     public function open(int $statusId): void
     {
@@ -29,6 +33,8 @@ class TaskQuickCreate extends Component
         $this->statusId = $statusId;
         $this->title = '';
         $this->description = '';
+        $this->priority = 'normal';
+        $this->dueDate = null;
     }
 
     public function close(): void
@@ -37,6 +43,8 @@ class TaskQuickCreate extends Component
         $this->statusId = null;
         $this->title = '';
         $this->description = '';
+        $this->priority = 'normal';
+        $this->dueDate = null;
     }
 
     public function save(): void
@@ -46,6 +54,8 @@ class TaskQuickCreate extends Component
         $this->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+            'priority' => ['required', 'in:urgent,high,normal,low'],
+            'dueDate' => ['nullable', 'date'],
         ]);
 
         $action = new CreateTask();
@@ -53,6 +63,8 @@ class TaskQuickCreate extends Component
             [
                 'title' => $this->title,
                 'description' => $this->description,
+                'priority' => $this->priority,
+                'due_date' => $this->dueDate,
                 'assignee_id' => auth()->id(),
             ],
             $this->project->id,

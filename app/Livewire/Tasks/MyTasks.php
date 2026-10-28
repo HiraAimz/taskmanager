@@ -41,23 +41,51 @@ class MyTasks extends Component
     {
         $userId = auth()->id();
 
-        // Get tasks assigned to current user
-        $query = Task::with(['status', 'project', 'tags', 'checklistItems'])
-            ->where('assignee_id', $userId);
+        // Get tasks assigned to current user (as primary assignee or collaborator)
+        $query = Task::with(['status', 'project', 'tags', 'checklistItems', 'assignee', 'assignees', 'comments'])
+            ->where(function ($q) use ($userId) {
+                $q->where('assignee_id', $userId)
+                    ->orWhereHas('assignees', fn ($sq) => $sq->where('users.id', $userId));
+            });
 
-        // Due Today
-        $dueToday = (clone $query)->whereDate('due_date', today())->get();
-
-        // Overdue
-        $overdue = (clone $query)->where('due_date', '<', today())->get();
-
-        // Upcoming (next 7 days)
-        $upcoming = (clone $query)
-            ->whereBetween('due_date', [today()->addDay(), today()->addDays(7)])
+        // Due Today (incomplete)
+        $dueToday = (clone $query)
+            ->whereDate('due_date', today())
+            ->whereNull('completed_at')
+            ->whereHas('status', fn ($sq) => $sq->where('type', '!=', \App\Enums\StatusType::Done))
             ->get();
 
-        // No Due Date
-        $noDueDate = (clone $query)->whereNull('due_date')->get();
+        // Overdue (incomplete tasks before today)
+        $overdue = (clone $query)
+            ->where('due_date', '<', today())
+            ->whereNull('completed_at')
+            ->whereHas('status', fn ($sq) => $sq->where('type', '!=', \App\Enums\StatusType::Done))
+            ->orderBy('due_date')
+            ->get();
+
+        // Upcoming (next 7 days, incomplete)
+        $upcoming = (clone $query)
+            ->whereBetween('due_date', [today()->addDay(), today()->addDays(7)])
+            ->whereNull('completed_at')
+            ->whereHas('status', fn ($sq) => $sq->where('type', '!=', \App\Enums\StatusType::Done))
+            ->orderBy('due_date')
+            ->get();
+
+        // No Due Date (incomplete)
+        $noDueDate = (clone $query)
+            ->whereNull('due_date')
+            ->whereNull('completed_at')
+            ->whereHas('status', fn ($sq) => $sq->where('type', '!=', \App\Enums\StatusType::Done))
+            ->get();
+
+        // Completed
+        $completed = (clone $query)
+            ->where(function ($q) {
+                $q->whereNotNull('completed_at')
+                    ->orWhereHas('status', fn ($sq) => $sq->where('type', \App\Enums\StatusType::Done));
+            })
+            ->latest('updated_at')
+            ->get();
 
         // All My Tasks
         $allTasks = (clone $query)->latest()->get();
@@ -67,6 +95,7 @@ class MyTasks extends Component
             'overdue' => $overdue,
             'upcoming' => $upcoming,
             'noDueDate' => $noDueDate,
+            'completed' => $completed,
             'allTasks' => $allTasks,
         ])->layout('components.layouts.app');
     }

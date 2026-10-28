@@ -17,7 +17,7 @@ class CreateComment
                 'commentable_type' => Task::class,
                 'commentable_id' => $task->id,
                 'user_id' => auth()->id(),
-                'content' => $content,
+                'body' => $content,
             ]);
 
             // Log activity

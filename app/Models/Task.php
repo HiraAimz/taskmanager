@@ -42,6 +42,22 @@ class Task extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::saving(function (Task $task) {
+            if ($task->isDirty('status_id') && ! $task->isDirty('completed_at')) {
+                $status = Status::find($task->status_id);
+                if ($status) {
+                    $isDone = ($status->type instanceof \App\Enums\StatusType)
+                        ? $status->type === \App\Enums\StatusType::Done
+                        : $status->type === 'done';
+
+                    $task->completed_at = $isDone ? now() : null;
+                }
+            }
+        });
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logFillable();

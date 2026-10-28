@@ -34,8 +34,10 @@ class ProjectIndex extends Component
 
     public function render()
     {
-        // Get all projects from workspaces the user is a member of
-        $workspaceIds = auth()->user()->workspaces->pluck('id');
+        // Get all projects from workspaces the user is a member of (or all if admin)
+        $workspaceIds = auth()->user()->hasRole('Admin')
+            ? \App\Models\Workspace::pluck('id')
+            : auth()->user()->workspaces()->pluck('workspaces.id');
 
         return view('livewire.projects.project-index', [
             'projects' => Project::whereIn('workspace_id', $workspaceIds)

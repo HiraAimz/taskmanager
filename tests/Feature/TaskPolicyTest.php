@@ -106,3 +106,57 @@ test('manager can manage tasks in their workspace', function () {
     expect($manager->can('update', $task))->toBeTrue();
     expect($manager->can('delete', $task))->toBeTrue();
 });
+
+test('member can change status of task assigned to them via assignee_id', function () {
+    $member = User::factory()->create();
+    $member->assignRole('Member');
+
+    $creator = User::factory()->create();
+    $creator->assignRole('Manager');
+
+    $workspace = Workspace::factory()->create(['owner_id' => $creator->id]);
+    $workspace->users()->attach([$creator->id, $member->id]);
+
+    $project = Project::factory()->create(['workspace_id' => $workspace->id, 'owner_id' => $creator->id]);
+    $list = TaskList::factory()->create(['project_id' => $project->id]);
+    $status = $project->statuses()->first();
+    $task = Task::factory()->create([
+        'project_id' => $project->id,
+        'task_list_id' => $list->id,
+        'status_id' => $status->id,
+        'creator_id' => $creator->id,
+        'assignee_id' => $member->id,
+    ]);
+
+    $this->actingAs($member);
+
+    expect($member->can('changeStatus', $task))->toBeTrue();
+});
+
+test('project member with task.change_status permission can change status of project task', function () {
+    $member = User::factory()->create();
+    $member->assignRole('Member');
+    $member->givePermissionTo('task.change_status');
+
+    $creator = User::factory()->create();
+    $creator->assignRole('Manager');
+
+    $workspace = Workspace::factory()->create(['owner_id' => $creator->id]);
+    $workspace->users()->attach([$creator->id, $member->id]);
+
+    $project = Project::factory()->create(['workspace_id' => $workspace->id, 'owner_id' => $creator->id]);
+    $project->members()->attach($member->id, ['role' => 'member']);
+
+    $list = TaskList::factory()->create(['project_id' => $project->id]);
+    $status = $project->statuses()->first();
+    $task = Task::factory()->create([
+        'project_id' => $project->id,
+        'task_list_id' => $list->id,
+        'status_id' => $status->id,
+        'creator_id' => $creator->id,
+    ]);
+
+    $this->actingAs($member);
+
+    expect($member->can('changeStatus', $task))->toBeTrue();
+});

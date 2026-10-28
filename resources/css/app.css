@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
@@ -127,4 +129,59 @@
 
 .animate-spin {
     animation: spin 1s linear infinite;
+}
+
+/* ClickUp Brand Utilities */
+.bg-clickup-gradient {
+    background: linear-gradient(135deg, #7b68ee 0%, #ff007f 100%);
+}
+
+.bg-clickup-gradient-subtle {
+    background: linear-gradient(135deg, rgba(123, 104, 238, 0.12) 0%, rgba(255, 0, 127, 0.08) 100%);
+}
+
+.text-clickup-gradient {
+    background: linear-gradient(135deg, #7b68ee 0%, #ff007f 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.clickup-shadow {
+    box-shadow: 0 4px 20px -2px rgba(123, 104, 238, 0.15), 0 2px 6px -1px rgba(0, 0, 0, 0.06);
+}
+
+.card-hover {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+}
+
+/* Custom ClickUp Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #334155;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: #475569;
 }

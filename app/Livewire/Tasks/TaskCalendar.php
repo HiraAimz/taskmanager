@@ -22,7 +22,7 @@ class TaskCalendar extends Component
     public function mount(Project $project): void
     {
         $this->authorize('view', $project);
-        $this->project = $project;
+        $this->project = $project->loadMissing(['workspace.projects']);
         $this->year = now()->year;
         $this->month = now()->month;
     }
@@ -99,9 +99,12 @@ class TaskCalendar extends Component
             $weeks[] = $week;
         }
 
+        $this->project->loadMissing(['workspace.projects']);
+
         return view('livewire.tasks.task-calendar', [
             'weeks' => $weeks,
             'monthName' => $startDate->format('F Y'),
-        ])->layout('components.layouts.app');
+            'project' => $this->project,
+        ])->layout('components.layouts.app', ['project' => $this->project]);
     }
 }

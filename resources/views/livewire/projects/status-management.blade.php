@@ -1,192 +1,188 @@
-<div class="py-12">
-    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-            <div class="p-6 text-gray-900 dark:text-gray-100">
-                <div class="mb-6 flex justify-between items-center">
-                    <div>
-                        <h2 class="text-2xl font-semibold">Manage Statuses</h2>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            Project: {{ $project->name }}
-                        </p>
-                    </div>
-                    <a href="{{ route('projects.edit', $project) }}" 
-                       class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-                        Back to Project
+<div class="h-full flex flex-col p-6 bg-[#f7f8fa] dark:bg-[#141517]">
+    <div class="max-w-4xl mx-auto w-full space-y-6">
+        
+        <!-- Header & Breadcrumbs -->
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-1">
+                    <a href="{{ route('projects.board', $project) }}" class="hover:text-purple-600 transition-colors">
+                        ← Back to {{ $project->name }} Board
                     </a>
                 </div>
-
-                @if (session()->has('message'))
-                    <div class="mb-4 p-4 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded">
-                        {{ session('message') }}
-                    </div>
-                @endif
-
-                @if (session()->has('error'))
-                    <div class="mb-4 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded">
-                        {{ session('error') }}
-                    </div>
-                @endif
-
-                <!-- Add New Status -->
-                <div class="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                    <h3 class="text-lg font-semibold mb-3">Add New Status</h3>
-                    <form wire:submit="addStatus" class="flex gap-3 items-end">
-                        <div class="flex-1">
-                            <label for="newStatusName" class="block text-sm font-medium mb-1">
-                                Status Name
-                            </label>
-                            <input type="text" 
-                                   id="newStatusName"
-                                   wire:model="newStatusName" 
-                                   class="w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-blue-500 dark:focus:border-blue-600 focus:ring-blue-500 dark:focus:ring-blue-600 rounded-md shadow-sm"
-                                   required>
-                            @error('newStatusName')
-                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
-                            <label for="newStatusColor" class="block text-sm font-medium mb-1">
-                                Color
-                            </label>
-                            <input type="color" 
-                                   id="newStatusColor"
-                                   wire:model="newStatusColor" 
-                                   class="h-10 w-20 border-gray-300 dark:border-gray-700 rounded cursor-pointer">
-                        </div>
-                        <button type="submit" 
-                                class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
-                            Add Status
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Status List -->
-                <div class="space-y-3">
-                    <h3 class="text-lg font-semibold mb-3">Current Statuses</h3>
-                    @foreach($statuses as $status)
-                        <div wire:key="status-{{ $status->id }}" 
-                             class="flex items-center gap-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                            
-                            <!-- Drag Handle -->
-                            <div class="text-gray-400 cursor-move">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M7 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM13 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
-                                </svg>
-                            </div>
-
-                            <!-- Color Badge -->
-                            <div class="w-4 h-4 rounded" style="background-color: {{ $status->color }}"></div>
-
-                            <!-- Status Name (Editable) -->
-                            @if($editingStatusId === $status->id)
-                                <input type="text" 
-                                       wire:model="editingStatusName"
-                                       wire:keydown.enter="saveStatusName({{ $status->id }})"
-                                       wire:keydown.escape="cancelEdit"
-                                       class="flex-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-blue-500 dark:focus:border-blue-600 focus:ring-blue-500 dark:focus:ring-blue-600 rounded-md shadow-sm">
-                            @else
-                                <span class="flex-1 font-medium">{{ $status->name }}</span>
-                            @endif
-
-                            <!-- Task Count -->
-                            <span class="text-sm text-gray-500 dark:text-gray-400">
-                                {{ $status->tasks->count() }} tasks
-                            </span>
-
-                            <!-- Actions -->
-                            <div class="flex gap-2">
-                                @if($editingStatusId === $status->id)
-                                    <button wire:click="saveStatusName({{ $status->id }})" 
-                                            class="text-xs text-green-600 dark:text-green-400 hover:underline">
-                                        Save
-                                    </button>
-                                    <button wire:click="cancelEdit" 
-                                            class="text-xs text-gray-600 dark:text-gray-400 hover:underline">
-                                        Cancel
-                                    </button>
-                                @else
-                                    <button wire:click="editStatusName({{ $status->id }})" 
-                                            class="text-xs text-blue-600 dark:text-blue-400 hover:underline">
-                                        Rename
-                                    </button>
-                                @endif
-
-                                <button wire:click="$set('editingColorId', {{ $status->id }})" 
-                                        class="text-xs text-blue-600 dark:text-blue-400 hover:underline">
-                                    Recolor
-                                </button>
-
-                                <button wire:click="confirmDelete({{ $status->id }})" 
-                                        class="text-xs text-red-600 dark:text-red-400 hover:underline">
-                                    Delete
-                                </button>
-                            </div>
-                        </div>
-
-                        @if($editingColorId === $status->id)
-                            <div class="ml-12 p-3 bg-gray-50 dark:bg-gray-900 rounded">
-                                <div class="flex gap-3 items-center">
-                                    <input type="color" 
-                                           wire:model.live="editingColor" 
-                                           class="h-10 w-20 border-gray-300 dark:border-gray-700 rounded cursor-pointer">
-                                    <button wire:click="saveColor({{ $status->id }})" 
-                                            class="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700">
-                                        Save Color
-                                    </button>
-                                    <button wire:click="$set('editingColorId', null)" 
-                                            class="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700">
-                                        Cancel
-                                    </button>
-                                </div>
-                            </div>
-                        @endif
-
-                        @if($confirmingDeleteId === $status->id)
-                            <div class="ml-12 p-3 bg-red-50 dark:bg-red-900/20 rounded">
-                                @if($status->tasks->count() > 0)
-                                    <p class="text-sm mb-3">
-                                        This status has {{ $status->tasks->count() }} task(s). 
-                                        Move them to another status before deleting:
-                                    </p>
-                                    <div class="flex gap-3 items-center">
-                                        <select wire:model="moveToStatusId" 
-                                                class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-blue-500 dark:focus:border-blue-600 focus:ring-blue-500 dark:focus:ring-blue-600 rounded-md shadow-sm">
-                                            <option value="">Select a status...</option>
-                                            @foreach($statuses as $s)
-                                                @if($s->id !== $status->id)
-                                                    <option value="{{ $s->id }}">{{ $s->name }}</option>
-                                                @endif
-                                            @endforeach
-                                        </select>
-                                        <button wire:click="deleteStatus({{ $status->id }})" 
-                                                class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700">
-                                            Move & Delete
-                                        </button>
-                                        <button wire:click="$set('confirmingDeleteId', null)" 
-                                                class="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700">
-                                            Cancel
-                                        </button>
-                                    </div>
-                                @else
-                                    <p class="text-sm mb-3">
-                                        Are you sure you want to delete this status?
-                                    </p>
-                                    <div class="flex gap-3">
-                                        <button wire:click="deleteStatus({{ $status->id }})" 
-                                                class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700">
-                                            Delete
-                                        </button>
-                                        <button wire:click="$set('confirmingDeleteId', null)" 
-                                                class="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700">
-                                            Cancel
-                                        </button>
-                                    </div>
-                                @endif
-                            </div>
-                        @endif
-                    @endforeach
-                </div>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>⚙️ Workflow & Statuses</span>
+                </h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Customize the stages that tasks move through in {{ $project->name }}.
+                </p>
             </div>
         </div>
+
+        <!-- Alert messages -->
+        @if (session()->has('success'))
+            <div class="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                ✓ {{ session('success') }}
+            </div>
+        @endif
+
+        @if (session()->has('error'))
+            <div class="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs font-semibold text-rose-700 dark:text-rose-300">
+                ⚠ {{ session('error') }}
+            </div>
+        @endif
+
+        <!-- Add New Status Section -->
+        <div class="bg-white dark:bg-[#1a1b1e] rounded-2xl border border-slate-200/80 dark:border-[#2a2b2f] p-5 shadow-xs">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3">
+                Create New Status
+            </h3>
+            <form wire:submit="addStatus" class="flex flex-col sm:flex-row gap-3 items-end">
+                <div class="flex-1 w-full">
+                    <label for="newStatusName" class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                        Status Name
+                    </label>
+                    <input type="text" 
+                           id="newStatusName"
+                           wire:model="newStatusName" 
+                           placeholder="e.g. Under QA, Blocker, Ready for Release"
+                           class="w-full text-xs bg-slate-50 dark:bg-[#16171a] border border-slate-200 dark:border-[#35363b] rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium"
+                           required>
+                    @error('newStatusName')
+                        <p class="mt-1 text-xs text-rose-600 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="newStatusColor" class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
+                        Color
+                    </label>
+                    <input type="color" 
+                           id="newStatusColor"
+                           wire:model="newStatusColor" 
+                           class="h-9 w-16 bg-transparent border border-slate-200 dark:border-[#35363b] rounded-xl cursor-pointer p-0.5">
+                </div>
+
+                <button type="submit" 
+                        class="inline-flex items-center gap-1.5 px-4 py-2 bg-clickup-gradient text-white text-xs font-semibold rounded-xl shadow-sm hover:opacity-95 transition-all">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                    Add Status
+                </button>
+            </form>
+        </div>
+
+        <!-- Statuses Ordered List -->
+        <div class="bg-white dark:bg-[#1a1b1e] rounded-2xl border border-slate-200/80 dark:border-[#2a2b2f] p-5 shadow-xs space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-[#25262c]">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    Project Status Workflow ({{ $statuses->count() }})
+                </h3>
+                <span class="text-[11px] text-slate-400">Order from left to right on Board</span>
+            </div>
+
+            <div class="space-y-2.5">
+                @foreach($statuses as $index => $status)
+                    <div wire:key="status-item-{{ $status->id }}" 
+                         class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border border-slate-200/80 dark:border-[#28292f] bg-slate-50/50 dark:bg-[#1e1f23]">
+                        
+                        <!-- Left: Reorder & Name -->
+                        <div class="flex items-center gap-3">
+                            <!-- Reorder buttons -->
+                            <div class="flex flex-col gap-0.5 text-slate-400">
+                                <button type="button" 
+                                        wire:click="reorderStatus({{ $status->id }}, 'up')"
+                                        class="p-0.5 hover:text-purple-600 disabled:opacity-20"
+                                        {{ $loop->first ? 'disabled' : '' }}
+                                        title="Move up">
+                                    ▲
+                                </button>
+                                <button type="button" 
+                                        wire:click="reorderStatus({{ $status->id }}, 'down')"
+                                        class="p-0.5 hover:text-purple-600 disabled:opacity-20"
+                                        {{ $loop->last ? 'disabled' : '' }}
+                                        title="Move down">
+                                    ▼
+                                </button>
+                            </div>
+
+                            <!-- Color indicator & picker -->
+                            <input type="color" 
+                                   value="{{ $status->color }}"
+                                   wire:change="updateStatus({{ $status->id }}, 'color', $event.target.value)"
+                                   class="w-6 h-6 rounded-full border-none cursor-pointer bg-transparent">
+
+                            <div>
+                                <input type="text" 
+                                       value="{{ $status->name }}"
+                                       wire:change="updateStatus({{ $status->id }}, 'name', $event.target.value)"
+                                       class="text-xs font-bold text-slate-800 dark:text-slate-100 bg-transparent border-b border-transparent hover:border-slate-300 dark:hover:border-slate-600 focus:border-purple-500 focus:outline-none px-1 py-0.5 rounded">
+                                <div class="text-[11px] text-slate-400 px-1 mt-0.5">
+                                    Stage: <span class="capitalize font-medium">{{ str_replace('_', ' ', $status->type->value ?? $status->type) }}</span> • 
+                                    <span class="font-semibold text-slate-600 dark:text-slate-300">{{ $status->tasks_count }}</span> {{ Str::plural('task', $status->tasks_count) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Actions -->
+                        <div class="flex items-center gap-2 self-end sm:self-center">
+                            @if($status->is_default)
+                                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                                    Default
+                                </span>
+                            @endif
+
+                            @can('delete', $status)
+                                @if(!$status->is_default)
+                                    <button type="button" 
+                                            wire:click="confirmDelete({{ $status->id }})"
+                                            class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors"
+                                            title="Delete Status">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </button>
+                                @endif
+                            @endcan
+                        </div>
+                    </div>
+
+                    <!-- Delete Confirmation & Move Tasks Modal Drawer -->
+                    @if($deletingStatusId === $status->id)
+                        <div class="ml-8 p-4 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 rounded-xl space-y-3">
+                            <p class="text-xs font-semibold text-rose-800 dark:text-rose-300">
+                                @if($status->tasks_count > 0)
+                                    This status contains {{ $status->tasks_count }} task(s). Select another status to transfer them into before deleting:
+                                @else
+                                    Are you sure you want to permanently delete the "{{ $status->name }}" status?
+                                @endif
+                            </p>
+
+                            @if($status->tasks_count > 0)
+                                <select wire:model="moveToStatusId" 
+                                        class="w-full text-xs bg-white dark:bg-[#1e1f23] border border-rose-300 dark:border-rose-800 rounded-lg px-3 py-1.5 text-slate-800 dark:text-slate-200">
+                                    <option value="">-- Choose destination status --</option>
+                                    @foreach($statuses as $dest)
+                                        @if($dest->id !== $status->id)
+                                            <option value="{{ $dest->id }}">{{ $dest->name }}</option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                            @endif
+
+                            <div class="flex items-center gap-2">
+                                <button type="button" 
+                                        wire:click="deleteStatus"
+                                        class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg shadow-sm">
+                                    Confirm Delete
+                                </button>
+                                <button type="button" 
+                                        wire:click="cancelDelete"
+                                        class="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-lg hover:bg-slate-300">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+
     </div>
 </div>

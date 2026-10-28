@@ -60,4 +60,18 @@ class Project extends Model
     {
         return $this->hasMany(Task::class);
     }
+
+    public function members()
+    {
+        return $this->belongsToMany(User::class, 'project_user')
+            ->withPivot('role')
+            ->withTimestamps();
+    }
+
+    public function hasMember(User|int $user): bool
+    {
+        $userId = $user instanceof User ? $user->id : $user;
+        return $this->owner_id === $userId 
+            || $this->members()->where('users.id', $userId)->exists();
+    }
 }

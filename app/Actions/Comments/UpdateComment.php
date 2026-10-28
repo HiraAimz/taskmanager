@@ -10,7 +10,7 @@ class UpdateComment
 {
     public function execute(Comment $comment, string $content): Comment
     {
-        $comment->update(['content' => $content]);
+        $comment->update(['body' => $content]);
 
         return $comment->fresh('user');
     }
