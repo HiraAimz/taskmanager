@@ -16,8 +16,12 @@ class TaskPolicy
 
     public function view(User $user, Task $task): bool
     {
-        return $user->hasRole('Admin')
-            || $task->project->workspace->users->contains($user);
+        if ($user->hasRole('Admin')) {
+            return true;
+        }
+
+        // Check if user is a member of the task's project workspace
+        return $user->workspaces()->where('workspaces.id', $task->project->workspace_id)->exists();
     }
 
     public function create(User $user): bool
@@ -32,12 +36,13 @@ class TaskPolicy
         }
 
         if ($user->hasRole('Manager')) {
-            return $task->project->workspace->users->contains($user);
+            // Check if user is a member of the task's project workspace
+            return $user->workspaces()->where('workspaces.id', $task->project->workspace_id)->exists();
         }
 
         // Members can edit their own tasks or tasks assigned to them
         return $task->creator_id === $user->id
-            || $task->assignees->contains($user);
+            || $task->assignees()->where('users.id', $user->id)->exists();
     }
 
     public function delete(User $user, Task $task): bool
@@ -47,7 +52,8 @@ class TaskPolicy
         }
 
         if ($user->hasRole('Manager')) {
-            return $task->project->workspace->users->contains($user);
+            // Check if user is a member of the task's project workspace
+            return $user->workspaces()->where('workspaces.id', $task->project->workspace_id)->exists();
         }
 
         return $task->creator_id === $user->id;
@@ -60,6 +66,7 @@ class TaskPolicy
 
     public function comment(User $user, Task $task): bool
     {
-        return $task->project->workspace->users->contains($user);
+        // Check if user is a member of the task's project workspace
+        return $user->workspaces()->where('workspaces.id', $task->project->workspace_id)->exists();
     }
 }

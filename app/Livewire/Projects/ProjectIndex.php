@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Projects;
 
-use App\Models\Workspace;
+use App\Models\Project;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -12,17 +12,9 @@ class ProjectIndex extends Component
 {
     use WithPagination;
 
-    public Workspace $workspace;
-
-    public function mount(Workspace $workspace): void
-    {
-        $this->authorize('view', $workspace);
-        $this->workspace = $workspace;
-    }
-
     public function archiveProject(int $projectId): void
     {
-        $project = $this->workspace->projects()->findOrFail($projectId);
+        $project = Project::findOrFail($projectId);
         $this->authorize('update', $project);
 
         $project->update(['archived_at' => now()]);
@@ -32,7 +24,7 @@ class ProjectIndex extends Component
 
     public function unarchiveProject(int $projectId): void
     {
-        $project = $this->workspace->projects()->withTrashed()->findOrFail($projectId);
+        $project = Project::withTrashed()->findOrFail($projectId);
         $this->authorize('update', $project);
 
         $project->update(['archived_at' => null]);
@@ -42,11 +34,15 @@ class ProjectIndex extends Component
 
     public function render()
     {
+        // Get all projects from workspaces the user is a member of
+        $workspaceIds = auth()->user()->workspaces->pluck('id');
+
         return view('livewire.projects.project-index', [
-            'projects' => $this->workspace->projects()
+            'projects' => Project::whereIn('workspace_id', $workspaceIds)
                 ->whereNull('archived_at')
-                ->with('owner')
+                ->with(['owner', 'workspace'])
                 ->withCount('tasks')
+                ->latest()
                 ->paginate(12),
         ])->layout('components.layouts.app');
     }

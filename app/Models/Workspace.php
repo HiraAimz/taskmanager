@@ -50,4 +50,20 @@ class Workspace extends Model
             ->withPivot('role')
             ->withTimestamps();
     }
+
+    /**
+     * Get the members of the workspace (alias for users).
+     */
+    public function members()
+    {
+        return $this->users();
+    }
+
+    /**
+     * Get all projects in the workspace.
+     */
+    public function projects()
+    {
+        return $this->hasMany(Project::class);
+    }
 }

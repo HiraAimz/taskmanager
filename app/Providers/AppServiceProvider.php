@@ -30,8 +30,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Register policies
         Gate::policy(Workspace::class, WorkspacePolicy::class);
-        Gate::policy(\App\Models\Project::class, \App\Models\Policies\ProjectPolicy::class);
-        Gate::policy(\App\Models\Task::class, \App\Models\Policies\TaskPolicy::class);
-        Gate::policy(\App\Models\Status::class, \App\Models\Policies\StatusPolicy::class);
+        Gate::policy(\App\Models\Project::class, \App\Policies\ProjectPolicy::class);
+        Gate::policy(\App\Models\Task::class, \App\Policies\TaskPolicy::class);
+        Gate::policy(\App\Models\Status::class, \App\Policies\StatusPolicy::class);
     }
 }

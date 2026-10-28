@@ -24,6 +24,7 @@ class Task extends Model
         'description',
         'priority',
         'creator_id',
+        'assignee_id',
         'start_date',
         'due_date',
         'estimated_minutes',
@@ -74,6 +75,11 @@ class Task extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'creator_id');
+    }
+
+    public function assignee()
+    {
+        return $this->belongsTo(User::class, 'assignee_id');
     }
 
     public function assignees()

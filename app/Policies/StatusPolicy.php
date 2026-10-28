@@ -16,8 +16,12 @@ class StatusPolicy
 
     public function view(User $user, Status $status): bool
     {
-        return $user->hasRole('Admin')
-            || $status->project->workspace->users->contains($user);
+        if ($user->hasRole('Admin')) {
+            return true;
+        }
+
+        // Check if user is a member of the status's project workspace
+        return $user->workspaces()->where('workspaces.id', $status->project->workspace_id)->exists();
     }
 
     public function create(User $user): bool
@@ -32,7 +36,8 @@ class StatusPolicy
         }
 
         if ($user->hasRole('Manager')) {
-            return $status->project->workspace->users->contains($user);
+            // Check if user is a member of the status's project workspace
+            return $user->workspaces()->where('workspaces.id', $status->project->workspace_id)->exists();
         }
 
         return false;

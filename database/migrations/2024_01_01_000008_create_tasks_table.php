@@ -16,6 +16,7 @@ return new class extends Migration
                 ->constrained('projects')
                 ->cascadeOnDelete();
             $table->foreignId('task_list_id')
+                ->nullable()
                 ->constrained('task_lists')
                 ->cascadeOnDelete();
             $table->foreignId('parent_id')
@@ -31,6 +32,10 @@ return new class extends Migration
             $table->foreignId('creator_id')
                 ->constrained('users')
                 ->restrictOnDelete();
+            $table->foreignId('assignee_id')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
             $table->date('start_date')->nullable();
             $table->date('due_date')->nullable();
             $table->integer('estimated_minutes')->nullable();
@@ -43,6 +48,7 @@ return new class extends Migration
             $table->index(['task_list_id', 'position']);
             $table->index('parent_id');
             $table->index('creator_id');
+            $table->index('assignee_id');
             $table->index('due_date');
             $table->index('completed_at');
             $table->index('priority');

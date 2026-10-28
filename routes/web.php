@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\AttachmentController;
 use App\Livewire\Admin\UserCreate;
 use App\Livewire\Admin\UserEdit;
 use App\Livewire\Admin\UserIndex;
@@ -9,6 +10,10 @@ use App\Livewire\Projects\ProjectCreate;
 use App\Livewire\Projects\ProjectEdit;
 use App\Livewire\Projects\ProjectIndex;
 use App\Livewire\Projects\StatusManagement;
+use App\Livewire\Tasks\MyTasks;
+use App\Livewire\Tasks\TaskBoard;
+use App\Livewire\Tasks\TaskCalendar;
+use App\Livewire\Tasks\TaskList;
 use App\Livewire\Workspaces\WorkspaceCreate;
 use App\Livewire\Workspaces\WorkspaceEdit;
 use App\Livewire\Workspaces\WorkspaceIndex;
@@ -55,7 +60,26 @@ Route::middleware('auth')->prefix('projects')->name('projects.')->group(function
     Route::get('/{project}/statuses', StatusManagement::class)
         ->name('statuses')
         ->can('update', 'project');
+    Route::get('/{project}/board', TaskBoard::class)
+        ->name('board')
+        ->can('view', 'project');
+    Route::get('/{project}/list', TaskList::class)
+        ->name('list')
+        ->can('view', 'project');
+    Route::get('/{project}/calendar', TaskCalendar::class)
+        ->name('calendar')
+        ->can('view', 'project');
 });
+
+// My Tasks Dashboard
+Route::get('/my-tasks', MyTasks::class)
+    ->name('my-tasks')
+    ->middleware('auth');
+
+// Attachment download route
+Route::get('/attachments/{attachment}/download', [AttachmentController::class, 'download'])
+    ->name('attachments.download')
+    ->middleware('auth');
 
 // Login and logout routes - no public registration
 Route::middleware('guest')->group(function () {

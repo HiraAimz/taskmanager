@@ -1,49 +1,81 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Login - {{ config('app.name', 'Laravel') }}</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="font-sans antialiased bg-gray-100 dark:bg-gray-900">
-    <div class="min-h-screen flex items-center justify-center">
-        <div class="w-full max-w-md">
-            <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8">
-                <h2 class="text-2xl font-bold text-center text-gray-900 dark:text-white mb-6">Login</h2>
+<x-layouts.guest>
+    <x-slot name="title">Login - TaskManager</x-slot>
 
-                @if ($errors->any())
-                    <div class="mb-4 p-4 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100 rounded-md">
-                        <ul>
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+    <div class="space-y-6">
+        <div class="text-center">
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Welcome back</h2>
+            <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Sign in to your account to continue</p>
+        </div>
 
-                <form method="POST" action="{{ route('login') }}">
-                    @csrf
+        @if ($errors->any())
+            <x-alert variant="danger" dismissible>
+                <div class="font-medium">Whoops! Something went wrong.</div>
+                <ul class="mt-2 text-sm space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </x-alert>
+        @endif
 
-                    <div class="mb-4">
-                        <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
-                        <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
-                               class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    </div>
+        @if (session('status'))
+            <x-alert variant="success">
+                {{ session('status') }}
+            </x-alert>
+        @endif
 
-                    <div class="mb-6">
-                        <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
-                        <input id="password" type="password" name="password" required
-                               class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    </div>
+        <form method="POST" action="{{ url('/login') }}" class="space-y-4" x-data="{ loading: false }" @submit="loading = true">
+            @csrf
 
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md">
-                        Login
-                    </button>
-                </form>
-            </div>
+            <x-input
+                name="email"
+                type="email"
+                label="Email Address"
+                :value="old('email')"
+                required
+                :error="$errors->first('email')"
+            >
+                <x-slot name="icon">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
+                    </svg>
+                </x-slot>
+            </x-input>
+
+            <x-input
+                name="password"
+                type="password"
+                label="Password"
+                required
+                :error="$errors->first('password')"
+            >
+                <x-slot name="icon">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                </x-slot>
+            </x-input>
+
+            <x-checkbox
+                name="remember"
+                label="Remember me"
+                helper="Stay signed in for 30 days"
+            />
+
+            <x-button type="submit" variant="primary" class="w-full justify-center" x-bind:disabled="loading">
+                <span x-show="!loading">Sign In</span>
+                <span x-show="loading" class="flex items-center gap-2" x-cloak>
+                    <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Signing in...
+                </span>
+            </x-button>
+        </form>
+
+        <div class="text-center text-sm text-slate-600 dark:text-slate-400">
+            <p>This is an internal tool. Contact your administrator for access.</p>
         </div>
     </div>
-</body>
-</html>
+</x-layouts.guest>

@@ -26,7 +26,8 @@ class WorkspacePolicy
     {
         // Admins can view any workspace
         // Users can view workspaces they belong to
-        return $user->hasRole('Admin') || $workspace->users->contains($user);
+        return $user->hasRole('Admin') 
+            || $user->workspaces()->where('workspaces.id', $workspace->id)->exists();
     }
 
     /**

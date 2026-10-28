@@ -11,7 +11,7 @@ use Livewire\Component;
 
 class ProjectCreate extends Component
 {
-    public Workspace $workspace;
+    public int $workspaceId;
 
     public string $name = '';
 
@@ -21,15 +21,21 @@ class ProjectCreate extends Component
 
     public string $icon = '📁';
 
-    public function mount(Workspace $workspace): void
+    public function mount(): void
     {
         $this->authorize('create', Project::class);
-        $this->workspace = $workspace;
+        
+        // Get user's workspaces
+        $workspaces = auth()->user()->workspaces;
+        
+        // Set first workspace as default if available
+        $this->workspaceId = $workspaces->first()?->id ?? 0;
     }
 
     public function rules(): array
     {
         return [
+            'workspaceId' => 'required|exists:workspaces,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'color' => 'required|string|size:7',
@@ -45,7 +51,7 @@ class ProjectCreate extends Component
 
         $action = new CreateProject();
         $project = $action->handle([
-            'workspace_id' => $this->workspace->id,
+            'workspace_id' => $this->workspaceId,
             'name' => $this->name,
             'description' => $this->description,
             'color' => $this->color,
@@ -54,11 +60,15 @@ class ProjectCreate extends Component
 
         session()->flash('success', 'Project created successfully.');
 
-        return redirect()->route('projects.index', $this->workspace);
+        return redirect()->route('projects.index');
     }
 
     public function render()
     {
-        return view('livewire.projects.project-create')->layout('components.layouts.app');
+        $workspaces = auth()->user()->workspaces;
+
+        return view('livewire.projects.project-create', [
+            'workspaces' => $workspaces,
+        ])->layout('components.layouts.app');
     }
 }

@@ -26,6 +26,7 @@ class TaskFactory extends Factory
             'description' => fake()->paragraph(),
             'priority' => fake()->randomElement(Priority::cases())->value,
             'creator_id' => User::factory(),
+            'assignee_id' => null, // Will be set by seeder
             'start_date' => fake()->optional()->dateTimeBetween('-1 month', '+1 month'),
             'due_date' => fake()->optional()->dateTimeBetween('now', '+2 months'),
             'estimated_minutes' => fake()->optional()->numberBetween(15, 480),

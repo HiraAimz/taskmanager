@@ -16,8 +16,12 @@ class ProjectPolicy
 
     public function view(User $user, Project $project): bool
     {
-        return $user->hasRole('Admin')
-            || $project->workspace->users->contains($user);
+        if ($user->hasRole('Admin')) {
+            return true;
+        }
+
+        // Check if user is a member of the project's workspace
+        return $user->workspaces()->where('workspaces.id', $project->workspace_id)->exists();
     }
 
     public function create(User $user): bool
@@ -32,7 +36,8 @@ class ProjectPolicy
         }
 
         if ($user->hasRole('Manager')) {
-            return $project->workspace->users->contains($user);
+            // Check if user is a member of the project's workspace
+            return $user->workspaces()->where('workspaces.id', $project->workspace_id)->exists();
         }
 
         return false;
@@ -40,7 +45,15 @@ class ProjectPolicy
 
     public function delete(User $user, Project $project): bool
     {
-        return $user->hasRole('Admin')
-            || ($user->hasRole('Manager') && $project->workspace->users->contains($user));
+        if ($user->hasRole('Admin')) {
+            return true;
+        }
+
+        if ($user->hasRole('Manager')) {
+            // Check if user is a member of the project's workspace
+            return $user->workspaces()->where('workspaces.id', $project->workspace_id)->exists();
+        }
+
+        return false;
     }
 }

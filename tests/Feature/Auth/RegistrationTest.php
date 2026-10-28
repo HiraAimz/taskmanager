@@ -2,15 +2,24 @@
 
 declare(strict_types=1);
 
-test('public registration GET route returns 404', function () {
-    $this->get('/register')->assertNotFound();
-});
+namespace Tests\Feature\Auth;
 
-test('public registration POST route returns 404', function () {
-    $this->post('/register', [
-        'name' => 'Test User',
-        'email' => 'test@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
-    ])->assertNotFound();
-});
+use Tests\TestCase;
+
+class RegistrationTest extends TestCase
+{
+    public function test_public_registration_get_route_returns_404(): void
+    {
+        $this->get('/register')->assertNotFound();
+    }
+
+    public function test_public_registration_post_route_returns_404(): void
+    {
+        $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ])->assertNotFound();
+    }
+}
