@@ -42,7 +42,7 @@ class MyTasks extends Component
         $userId = auth()->id();
 
         // Get tasks assigned to current user (as primary assignee or collaborator)
-        $query = Task::with(['status', 'project', 'tags', 'checklistItems', 'assignee', 'assignees', 'comments'])
+        $query = Task::with(['status', 'project.workspace', 'tags', 'checklistItems', 'assignee', 'assignees', 'comments'])
             ->where(function ($q) use ($userId) {
                 $q->where('assignee_id', $userId)
                     ->orWhereHas('assignees', fn ($sq) => $sq->where('users.id', $userId));

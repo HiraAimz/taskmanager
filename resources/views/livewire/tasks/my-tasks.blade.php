@@ -5,7 +5,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
-                    <span>📋 My Tasks</span>
+                    <span><svg class="w-6 h-6 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg> My Tasks</span>
                 </h1>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     Track and manage all tasks assigned to you or shared with you across workspaces.
@@ -197,19 +197,19 @@
                         <div class="flex items-center gap-2 self-start sm:self-center">
                             @if($task->priority->value === 'urgent')
                                 <span class="px-2 py-0.5 rounded text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
-                                    🚩 Urgent
+                                    ● Urgent
                                 </span>
                             @elseif($task->priority->value === 'high')
                                 <span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                                    🚩 High
+                                    ● High
                                 </span>
                             @elseif($task->priority->value === 'normal')
                                 <span class="px-2 py-0.5 rounded text-xs font-medium bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                                    🚩 Normal
+                                    ● Normal
                                 </span>
                             @else
                                 <span class="px-2 py-0.5 rounded text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
-                                    🏳️ Low
+                                    ○ Low
                                 </span>
                             @endif
                         </div>
@@ -217,9 +217,7 @@
                 </div>
             @empty
                 <div class="bg-white dark:bg-[#1a1b1e] rounded-2xl border border-slate-200/80 dark:border-[#2a2b2f] p-12 text-center">
-                    <div class="w-12 h-12 mx-auto rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-600 flex items-center justify-center mb-3">
-                        🎉
-                    </div>
+                    <div class="w-12 h-12 mx-auto rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-600 flex items-center justify-center mb-3"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
                     <h4 class="text-sm font-bold text-slate-800 dark:text-white">All caught up!</h4>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">No tasks in this category right now.</p>
                 </div>

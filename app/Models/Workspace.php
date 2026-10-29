@@ -66,4 +66,12 @@ class Workspace extends Model
     {
         return $this->hasMany(Project::class);
     }
+
+    /**
+     * Get all tasks across all projects in the workspace.
+     */
+    public function tasks()
+    {
+        return $this->hasManyThrough(Task::class, Project::class);
+    }
 }

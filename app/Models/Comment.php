@@ -46,4 +46,9 @@ class Comment extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function attachments()
+    {
+        return $this->hasMany(CommentAttachment::class);
+    }
 }

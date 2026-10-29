@@ -72,7 +72,7 @@ class TaskCalendar extends Component
 
         // Get all tasks with due dates in this month
         $tasks = $this->project->tasks()
-            ->with(['assignee', 'status', 'tags'])
+            ->with(['project.workspace', 'assignee', 'status', 'tags'])
             ->whereNotNull('due_date')
             ->whereBetween('due_date', [$startDate, $endDate])
             ->get()

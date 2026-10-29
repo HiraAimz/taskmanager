@@ -63,6 +63,18 @@ class User extends Authenticatable
     /**
      * Get the workspaces the user belongs to.
      */
+    public function notificationPreferences()
+    {
+        return $this->hasOne(UserNotificationPreference::class);
+    }
+
+    public function wantsNotification(string $type): bool
+    {
+        $prefs = $this->notificationPreferences ?? UserNotificationPreference::forUser($this->id);
+
+        return (bool) ($prefs->{$type} ?? true);
+    }
+
     public function workspaces()
     {
         return $this->belongsToMany(Workspace::class, 'workspace_user')

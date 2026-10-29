@@ -7,7 +7,10 @@
             <div class="flex items-center gap-4 flex-wrap">
                 <div class="flex items-center gap-2">
                     <span class="w-3.5 h-3.5 rounded-full shadow-xs" style="background-color: {{ $project->color ?? '#7b68ee' }}"></span>
-                    <h2 class="text-base font-bold text-slate-900 dark:text-white">{{ $project->icon ? $project->icon . ' ' : '' }}{{ $project->name }}</h2>
+                    <h2 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        {!! $project->renderSvgIcon('w-4 h-4 text-purple-500 shrink-0') !!}
+                        <span>{{ $project->name }}</span>
+                    </h2>
                 </div>
 
                 <!-- ClickUp View Tabs -->
@@ -116,9 +119,9 @@
                                             </div>
                                             <div class="flex items-center gap-1.5 mt-0.5 text-[10px] text-slate-400">
                                                 @if($task->priority->value === 'urgent')
-                                                    <span class="text-rose-500">🚩 Urgent</span>
+                                                    <span class="text-rose-500">● Urgent</span>
                                                 @elseif($task->priority->value === 'high')
-                                                    <span class="text-amber-500">🚩 High</span>
+                                                    <span class="text-amber-500">● High</span>
                                                 @endif
                                                 @if($task->assignee)
                                                     <span class="truncate">{{ $task->assignee->name }}</span>

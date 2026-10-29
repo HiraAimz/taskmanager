@@ -204,6 +204,26 @@
                         <span x-show="sidebarOpen" x-cloak class="flex-1 truncate">Projects Hub</span>
                     </a>
                     @endif
+
+                    <!-- Workspace Progress Dashboard (Owners, Admins, or Users with workspace.view_progress) -->
+                    @php
+                        $targetProgressWs = $currentWorkspace ?? ($authUser && $authUser->hasRole('Admin') ? \App\Models\Workspace::first() : ($userWorkspaces->first() ?? null));
+                        $canViewProgress = $authUser && (
+                            $authUser->hasRole('Admin') || 
+                            ($targetProgressWs && ($targetProgressWs->owner_id === $authUser->id || $authUser->can('workspace.view_progress')))
+                        );
+                    @endphp
+                    @if($canViewProgress && $targetProgressWs)
+                    <a href="{{ route('workspaces.progress', $targetProgressWs) }}" 
+                       class="group flex items-center gap-3 px-3 py-2 text-xs font-medium rounded-lg transition-all {{ request()->routeIs('workspaces.progress') ? 'bg-purple-50 dark:bg-gradient-to-r dark:from-purple-600/30 dark:to-pink-600/20 text-purple-700 dark:text-white font-semibold border border-purple-200 dark:border-purple-500/30 shadow-2xs' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#2b2c30] hover:text-slate-900 dark:hover:text-white' }}"
+                       :class="!sidebarOpen && 'justify-center px-0'"
+                       title="Workspace Progress Dashboard">
+                        <svg class="w-4 h-4 flex-shrink-0 {{ request()->routeIs('workspaces.progress') ? 'text-purple-600 dark:text-purple-400' : 'text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        <span x-show="sidebarOpen" x-cloak class="flex-1 truncate">Workspace Progress</span>
+                    </a>
+                    @endif
                 </div>
 
                 <!-- ClickUp Spaces / Projects List -->
@@ -226,8 +246,11 @@
                             @endphp
                             <a href="{{ route('projects.board', $p) }}" 
                                class="group flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs transition-colors {{ $isCurrentProject ? 'bg-slate-100 dark:bg-[#2b2c30] text-purple-700 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#25262a] hover:text-slate-900 dark:hover:text-white' }}">
-                                <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: {{ $p->color ?? '#7b68ee' }}"></span>
-                                <span class="truncate flex-1">{{ $p->icon ? $p->icon . ' ' : '' }}{{ $p->name }}</span>
+                                <span class="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-2xs" style="background-color: {{ $p->color ?? '#7b68ee' }}"></span>
+                                <span class="flex items-center gap-1.5 truncate flex-1 min-w-0">
+                                    {!! $p->renderSvgIcon('w-3.5 h-3.5 flex-shrink-0 text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400') !!}
+                                    <span class="truncate">{{ $p->name }}</span>
+                                </span>
                                 <span class="text-[10px] text-slate-400 dark:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">Board</span>
                             </a>
                         @empty
@@ -268,6 +291,18 @@
                         <span x-show="sidebarOpen" x-cloak class="flex-1 truncate">Roles & Permissions</span>
                     </a>
                     @endif
+
+                    @if($authUser->hasRole('Admin') || $authUser->can('manage-workspaces'))
+                    <a href="{{ route('admin.progress') }}" 
+                       class="group flex items-center gap-3 px-3 py-2 text-xs font-medium rounded-lg transition-all {{ request()->routeIs('admin.progress') ? 'bg-purple-50 dark:bg-gradient-to-r dark:from-purple-600/30 dark:to-pink-600/20 text-purple-700 dark:text-white font-semibold border border-purple-200 dark:border-purple-500/30 shadow-2xs' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#2b2c30] hover:text-slate-900 dark:hover:text-white' }}"
+                       :class="!sidebarOpen && 'justify-center px-0'"
+                       title="Global Progress">
+                        <svg class="w-4 h-4 flex-shrink-0 {{ request()->routeIs('admin.progress') ? 'text-purple-600 dark:text-purple-400' : 'text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span x-show="sidebarOpen" x-cloak class="flex-1 truncate">Global Progress</span>
+                    </a>
+                    @endif
                 </div>
                 @endif
             </nav>
@@ -286,6 +321,14 @@
                             </span>
                         </div>
                     </div>
+                    <a href="{{ route('profile.notifications') }}" 
+                       x-show="sidebarOpen" x-cloak
+                       class="p-1.5 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-slate-200 dark:hover:bg-[#2b2c30] rounded-md transition-colors"
+                       title="Email Notification Preferences">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                    </a>
                     <form method="POST" action="{{ route('logout') }}" x-show="sidebarOpen" x-cloak>
                         @csrf
                         <button type="submit" 
@@ -315,8 +358,10 @@
             
             <div class="h-16 flex items-center justify-between px-4 border-b border-slate-200 dark:border-[#2d2e32]">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-lg bg-clickup-gradient flex items-center justify-center text-white font-bold">
-                        ✓
+                    <div class="w-8 h-8 rounded-lg bg-clickup-gradient flex items-center justify-center shadow-md flex-shrink-0">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
                     </div>
                     <span class="font-bold text-slate-900 dark:text-white text-base">TaskManager</span>
                 </div>
@@ -347,8 +392,13 @@
                 </a>
                 @endif
                 @if($authUser && ($authUser->hasRole('Admin') || $authUser->can('workspace.view')))
-                <a href="{{ route('workspaces.index') }}" class="flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-[#2b2c30] {{ request()->routeIs('workspaces.*') ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-white font-bold' : '' }}">
+                <a href="{{ route('workspaces.index') }}" class="flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-[#2b2c30] {{ request()->routeIs('workspaces.*') && !request()->routeIs('workspaces.progress') ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-white font-bold' : '' }}">
                     Workspaces
+                </a>
+                @endif
+                @if($canViewProgress && $targetProgressWs)
+                <a href="{{ route('workspaces.progress', $targetProgressWs) }}" class="flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-[#2b2c30] {{ request()->routeIs('workspaces.progress') ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-white font-bold' : '' }}">
+                    Workspace Progress
                 </a>
                 @endif
                 @if($authUser && ($authUser->hasRole('Admin') || $authUser->can('user.view') || $authUser->can('manage-users')))
@@ -361,6 +411,14 @@
                     Roles & Permissions
                 </a>
                 @endif
+                @if($authUser && ($authUser->hasRole('Admin') || $authUser->can('manage-workspaces')))
+                <a href="{{ route('admin.progress') }}" class="flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-[#2b2c30] {{ request()->routeIs('admin.progress') ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-white font-bold' : '' }}">
+                    Global Progress
+                </a>
+                @endif
+                <a href="{{ route('profile.notifications') }}" class="flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-[#2b2c30] {{ request()->routeIs('profile.notifications') ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-white font-bold' : '' }}">
+                    Notification Settings
+                </a>
             </div>
         </aside>
 

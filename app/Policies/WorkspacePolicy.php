@@ -85,4 +85,30 @@ class WorkspacePolicy
     {
         return $this->addMember($user, $workspace);
     }
+
+    /**
+     * Determine whether the user can view the progress dashboard of the workspace.
+     */
+    public function viewProgress(User $user, Workspace $workspace): bool
+    {
+        if ($user->hasRole('Admin') || $workspace->owner_id === $user->id) {
+            return true;
+        }
+
+        return ($user->can('workspace.view_progress') || $user->can('manage-workspaces') || $user->hasRole('Manager'))
+            && $user->workspaces()->where('workspaces.id', $workspace->id)->exists();
+    }
+
+    /**
+     * Determine whether the user can view all tasks within the workspace.
+     */
+    public function viewAllTasks(User $user, Workspace $workspace): bool
+    {
+        if ($user->hasRole('Admin') || $workspace->owner_id === $user->id) {
+            return true;
+        }
+
+        return ($user->can('workspace.view_all_tasks') || $user->can('manage-workspaces') || $user->hasRole('Manager'))
+            && $user->workspaces()->where('workspaces.id', $workspace->id)->exists();
+    }
 }

@@ -10,6 +10,11 @@ use App\Models\User;
 
 class TaskPolicy
 {
+    protected function ensureLoaded(Task $task): void
+    {
+        $task->loadMissing('project.workspace');
+    }
+
     public function viewAny(User $user): bool
     {
         return true;
@@ -21,19 +26,32 @@ class TaskPolicy
             return true;
         }
 
+        $this->ensureLoaded($task);
+
+        // Workspace owner has complete task visibility across all projects in their workspace
+        if ($task->project && $task->project->workspace && $task->project->workspace->owner_id === $user->id) {
+            return true;
+        }
+
+        if (! $task->project) {
+            return false;
+        }
+
         // Must be member of workspace
         if (! $user->workspaces()->where('workspaces.id', $task->project->workspace_id)->exists()) {
             return false;
         }
 
-        // Project member, project owner, manager, or direct assignee/creator
+        // Project member, project owner, manager, direct assignee/creator, or view_all_tasks permission
         return $task->project->owner_id === $user->id
             || $task->project->members()->where('users.id', $user->id)->exists()
             || $task->creator_id === $user->id
             || $task->assignee_id === $user->id
             || $task->assignees()->where('users.id', $user->id)->exists()
             || $user->hasRole('Manager')
-            || $user->can('manage-projects');
+            || $user->can('manage-projects')
+            || $user->can('task.view_all_tasks')
+            || $user->can('workspace.view_all_tasks');
     }
 
     public function create(User $user, ?Project $project = null): bool
@@ -55,6 +73,12 @@ class TaskPolicy
     {
         if ($user->hasRole('Admin')) {
             return true;
+        }
+
+        $this->ensureLoaded($task);
+
+        if (! $task->project) {
+            return false;
         }
 
         // Must belong to the project workspace
@@ -88,6 +112,12 @@ class TaskPolicy
             return true;
         }
 
+        $this->ensureLoaded($task);
+
+        if (! $task->project) {
+            return false;
+        }
+
         // Must belong to workspace
         if (! $user->workspaces()->where('workspaces.id', $task->project->workspace_id)->exists()) {
             return false;
@@ -118,6 +148,12 @@ class TaskPolicy
             return true;
         }
 
+        $this->ensureLoaded($task);
+
+        if (! $task->project) {
+            return false;
+        }
+
         // Must belong to workspace
         if (! $user->workspaces()->where('workspaces.id', $task->project->workspace_id)->exists()) {
             return false;
@@ -140,6 +176,12 @@ class TaskPolicy
             return true;
         }
 
+        $this->ensureLoaded($task);
+
+        if (! $task->project) {
+            return false;
+        }
+
         return $user->workspaces()->where('workspaces.id', $task->project->workspace_id)->exists()
             && ($user->can('comment.create') || $user->can('comment-task') || $user->hasRole(['Manager', 'Member']));
     }
@@ -148,6 +190,12 @@ class TaskPolicy
     {
         if ($user->hasRole('Admin')) {
             return true;
+        }
+
+        $this->ensureLoaded($task);
+
+        if (! $task->project) {
+            return false;
         }
 
         return $user->workspaces()->where('workspaces.id', $task->project->workspace_id)->exists()

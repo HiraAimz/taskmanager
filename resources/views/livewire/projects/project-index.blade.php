@@ -5,7 +5,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
-                    <span>🚀 Projects & Spaces</span>
+                    <svg class="w-6 h-6 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg><span>Projects &amp; Spaces</span>
                 </h1>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     Organize tasks, collaborate with team members, and track workflows across spaces.
@@ -23,9 +23,7 @@
 
         @if($projects->isEmpty())
             <div class="bg-white dark:bg-[#1a1b1e] rounded-2xl border border-slate-200/80 dark:border-[#2a2b2f] p-16 text-center max-w-md mx-auto space-y-4">
-                <div class="w-14 h-14 mx-auto rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 flex items-center justify-center text-2xl">
-                    📁
-                </div>
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 flex items-center justify-center"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg></div>
                 <h3 class="text-base font-bold text-slate-900 dark:text-white">No projects yet</h3>
                 <p class="text-xs text-slate-500 dark:text-slate-400">Create your first space to start organizing your tasks and boards.</p>
                 @can('create', \App\Models\Project::class)
@@ -51,7 +49,7 @@
                                     <div class="flex items-center gap-2.5">
                                         <div class="w-10 h-10 rounded-xl flex items-center justify-center text-xl shadow-2xs" 
                                              style="background-color: {{ $project->color ?? '#7b68ee' }}18">
-                                            {{ $project->icon ?? '📁' }}
+                                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
                                         </div>
                                         <div>
                                             <h3 class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">

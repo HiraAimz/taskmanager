@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Actions\Tasks;
 
+use App\Models\Status;
 use App\Models\Task;
+use App\Services\TaskActivityService;
 use Illuminate\Support\Facades\DB;
 
 class UpdateTaskStatus
@@ -12,19 +14,15 @@ class UpdateTaskStatus
     public function execute(Task $task, int $statusId): Task
     {
         return DB::transaction(function () use ($task, $statusId) {
-            $oldStatusId = $task->status_id;
+            $task->loadMissing('status');
+            $oldStatus = $task->status ?? Status::find($task->status_id);
 
             $task->update(['status_id' => $statusId]);
+            $newStatus = Status::find($statusId);
 
-            // Log activity
-            activity()
-                ->performedOn($task)
-                ->causedBy(auth()->user())
-                ->withProperties([
-                    'old_status_id' => $oldStatusId,
-                    'new_status_id' => $statusId,
-                ])
-                ->log('changed task status');
+            if ($oldStatus && $newStatus && $oldStatus->id !== $newStatus->id) {
+                app(TaskActivityService::class)->logStatusChange($task, $oldStatus, $newStatus);
+            }
 
             return $task->fresh('status');
         });

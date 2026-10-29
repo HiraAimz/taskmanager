@@ -10,7 +10,7 @@
                     </a>
                 </div>
                 <h1 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <span>⚙️ Workflow & Statuses</span>
+                    <span><svg class="w-6 h-6 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7l3 3 3-3m-3-3v6"/></svg> Workflow &amp; Statuses</span>
                 </h1>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
                     Customize the stages that tasks move through in {{ $project->name }}.
@@ -21,13 +21,13 @@
         <!-- Alert messages -->
         @if (session()->has('success'))
             <div class="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-                ✓ {{ session('success') }}
+                <div class="flex items-center gap-2"><svg class="w-4 h-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg><span>{{ session('success') }}</span></div>
             </div>
         @endif
 
         @if (session()->has('error'))
             <div class="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs font-semibold text-rose-700 dark:text-rose-300">
-                ⚠ {{ session('error') }}
+                <div class="flex items-center gap-2"><svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg><span>{{ session('error') }}</span></div>
             </div>
         @endif
 

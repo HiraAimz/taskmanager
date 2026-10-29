@@ -57,7 +57,7 @@ class TaskList extends Component
 
     public function updateTaskStatus(int $taskId, int $statusId): void
     {
-        $task = $this->project->tasks()->findOrFail($taskId);
+        $task = $this->project->tasks()->with(['project.workspace', 'status'])->findOrFail($taskId);
         $this->authorize('changeStatus', $task);
 
         $action = new \App\Actions\Tasks\UpdateTaskStatus();
@@ -79,7 +79,7 @@ class TaskList extends Component
     public function render()
     {
         $query = $this->project->tasks()
-            ->with(['assignee', 'assignees', 'status', 'tags', 'checklistItems', 'comments']);
+            ->with(['project.workspace', 'assignee', 'assignees', 'status', 'tags', 'checklistItems', 'comments']);
 
         if (! empty($this->search)) {
             $query->where('title', 'like', '%'.$this->search.'%');

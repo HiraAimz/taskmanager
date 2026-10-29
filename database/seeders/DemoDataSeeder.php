@@ -75,7 +75,7 @@ class DemoDataSeeder extends Seeder
             'name' => 'Website Redesign',
             'description' => 'Complete overhaul of company website',
             'color' => '#3B82F6',
-            'icon' => '🌐',
+            'icon' => 'globe',
         ], $manager);
 
         $project2 = $action->handle([
@@ -83,7 +83,7 @@ class DemoDataSeeder extends Seeder
             'name' => 'Content Strategy Q1',
             'description' => 'Plan and execute Q1 content calendar',
             'color' => '#8B5CF6',
-            'icon' => '📝',
+            'icon' => 'document',
         ], $manager);
 
         $project3 = $action->handle([
@@ -91,7 +91,7 @@ class DemoDataSeeder extends Seeder
             'name' => 'Mobile App v2',
             'description' => 'Next generation mobile application',
             'color' => '#10B981',
-            'icon' => '📱',
+            'icon' => 'mobile',
         ], $manager);
 
         // Create lists for project 1

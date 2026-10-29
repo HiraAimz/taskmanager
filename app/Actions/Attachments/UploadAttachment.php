@@ -6,9 +6,9 @@ namespace App\Actions\Attachments;
 
 use App\Models\Attachment;
 use App\Models\Task;
+use App\Services\TaskActivityService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class UploadAttachment
 {
@@ -27,18 +27,14 @@ class UploadAttachment
                 'attachable_type' => Task::class,
                 'attachable_id' => $task->id,
                 'user_id' => auth()->id(),
-                'file_name' => $file->getClientOriginalName(),
-                'file_path' => $path,
-                'file_type' => $file->getClientMimeType(),
-                'file_size' => $file->getSize(),
+                'disk_path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getClientMimeType(),
+                'size' => $file->getSize(),
             ]);
 
-            // Log activity
-            activity()
-                ->performedOn($task)
-                ->causedBy(auth()->user())
-                ->withProperties(['file_name' => $attachment->file_name])
-                ->log('added attachment');
+            // Log activity and notify
+            app(TaskActivityService::class)->logAttachmentAdded($task, $attachment);
 
             return $attachment->load('user');
         });

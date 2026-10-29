@@ -38,7 +38,7 @@ class TaskBoard extends Component
 
     public function updateTaskStatus(int $taskId, int $statusId): void
     {
-        $task = $this->project->tasks()->findOrFail($taskId);
+        $task = $this->project->tasks()->with(['project.workspace', 'status'])->findOrFail($taskId);
 
         $this->authorize('changeStatus', $task);
 
@@ -63,7 +63,7 @@ class TaskBoard extends Component
         $query = $this->project->statuses()
             ->with([
                 'tasks' => function ($query) {
-                    $query->with(['assignee', 'assignees', 'tags', 'checklistItems', 'comments'])
+                    $query->with(['project.workspace', 'status', 'assignee', 'assignees', 'tags', 'checklistItems', 'comments'])
                         ->orderBy('position');
 
                     // Apply filters

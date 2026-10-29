@@ -19,7 +19,9 @@
         <!-- Badge & Icon -->
         <div class="relative mx-auto w-24 h-24">
             <div class="w-24 h-24 rounded-3xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200/80 dark:border-purple-800/80 flex items-center justify-center shadow-lg">
-                <span class="text-4xl">🔍</span>
+                <svg class="w-12 h-12 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
             </div>
             <span class="absolute -bottom-2 -right-2 px-2.5 py-0.5 rounded-full bg-purple-600 text-white text-[11px] font-black shadow-md">
                 404

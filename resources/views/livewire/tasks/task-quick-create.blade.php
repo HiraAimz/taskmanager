@@ -48,10 +48,10 @@
                             <select id="priority"
                                     wire:model="priority"
                                     class="w-full text-xs font-semibold bg-slate-50 dark:bg-[#16171a] border border-slate-200 dark:border-[#2f3036] rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                                <option value="urgent">🔴 Urgent</option>
-                                <option value="high">🟠 High</option>
-                                <option value="normal">🔵 Normal</option>
-                                <option value="low">⚪ Low</option>
+                                <option value="urgent">● Urgent</option>
+                                <option value="high">● High</option>
+                                <option value="normal">● Normal</option>
+                                <option value="low">○ Low</option>
                             </select>
                         </div>
 

@@ -7,7 +7,10 @@
             <div class="flex items-center gap-4 flex-wrap">
                 <div class="flex items-center gap-2">
                     <span class="w-3.5 h-3.5 rounded-full shadow-xs" style="background-color: {{ $project->color ?? '#7b68ee' }}"></span>
-                    <h2 class="text-base font-bold text-slate-900 dark:text-white">{{ $project->icon ? $project->icon . ' ' : '' }}{{ $project->name }}</h2>
+                    <h2 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        {!! $project->renderSvgIcon('w-4 h-4 text-purple-500 shrink-0') !!}
+                        <span>{{ $project->name }}</span>
+                    </h2>
                 </div>
 
                 <!-- ClickUp View Tabs -->
@@ -43,7 +46,7 @@
                 <div class="relative">
                     <select wire:model.live="filterAssignee" 
                             class="text-xs bg-slate-50 dark:bg-[#25262a] border border-slate-200 dark:border-[#35363b] rounded-lg pl-3 pr-8 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium">
-                        <option value="">👤 All Assignees</option>
+                        <option value="">All Assignees</option>
                         @foreach($workspaceMembers as $member)
                             <option value="{{ $member->id }}">{{ $member->name }}</option>
                         @endforeach
@@ -54,11 +57,11 @@
                 <div class="relative">
                     <select wire:model.live="filterPriority" 
                             class="text-xs bg-slate-50 dark:bg-[#25262a] border border-slate-200 dark:border-[#35363b] rounded-lg pl-3 pr-8 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium">
-                        <option value="">🚩 All Priorities</option>
-                        <option value="urgent">🔴 Urgent</option>
-                        <option value="high">🟠 High</option>
-                        <option value="normal">🔵 Normal</option>
-                        <option value="low">⚪ Low</option>
+                        <option value="">All Priorities</option>
+                        <option value="urgent">● Urgent</option>
+                        <option value="high">● High</option>
+                        <option value="normal">● Normal</option>
+                        <option value="low">○ Low</option>
                     </select>
                 </div>
 
@@ -138,19 +141,19 @@
                                     <div class="flex items-center gap-1">
                                         @if($task->priority->value === 'urgent')
                                             <span class="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
-                                                🚩 Urgent
+                                                ● Urgent
                                             </span>
                                         @elseif($task->priority->value === 'high')
                                             <span class="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                                                🚩 High
+                                                ● High
                                             </span>
                                         @elseif($task->priority->value === 'normal')
                                             <span class="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                                                🚩 Normal
+                                                ● Normal
                                             </span>
                                         @else
                                             <span class="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
-                                                🏳️ Low
+                                                ○ Low
                                             </span>
                                         @endif
                                     </div>

@@ -8,7 +8,10 @@ use App\Actions\Tasks\DeleteTask;
 use App\Actions\Tasks\UpdateTask;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\TaskActivityService;
+use Livewire\Attributes\On;
 use Livewire\Component;
+use Spatie\Activitylog\Models\Activity;
 
 class TaskDetail extends Component
 {
@@ -28,6 +31,10 @@ class TaskDetail extends Component
 
     public ?string $dueDate;
 
+    public int $activityLimit = 10;
+
+    public string $activeTab = 'comments'; // 'comments' or 'activity'
+
     public function mount(int $taskId): void
     {
         $this->task = Task::with(['assignee', 'assignees', 'status', 'tags', 'project.statuses', 'project.workspace.members', 'checklistItems', 'comments.user', 'attachments.user'])
@@ -42,6 +49,26 @@ class TaskDetail extends Component
         $this->assigneeId = $this->task->assignee_id;
         $this->selectedAssignees = $this->task->assignees->pluck('id')->toArray();
         $this->dueDate = $this->task->due_date?->format('Y-m-d');
+    }
+
+    public function setTab(string $tab): void
+    {
+        $this->activeTab = $tab;
+    }
+
+    public function loadMoreActivity(): void
+    {
+        $this->activityLimit += 10;
+    }
+
+    #[On('comment-added')]
+    #[On('comment-updated')]
+    #[On('comment-deleted')]
+    #[On('attachment-uploaded')]
+    #[On('attachment-deleted')]
+    public function refreshActivities(): void
+    {
+        $this->task->loadMissing('comments.user', 'attachments.user');
     }
 
     public function save(): void
@@ -95,6 +122,12 @@ class TaskDetail extends Component
 
         $this->selectedAssignees = array_values(array_filter($this->selectedAssignees, fn ($id) => (int) $id !== $userId));
         $this->task->assignees()->sync($this->selectedAssignees);
+
+        $collab = User::find($userId);
+        if ($collab) {
+            app(TaskActivityService::class)->logCollaboratorRemoved($this->task, $collab);
+        }
+
         $this->dispatch('task-updated');
     }
 
@@ -107,6 +140,12 @@ class TaskDetail extends Component
         } else {
             $this->selectedAssignees[] = $userId;
             $this->task->assignees()->sync($this->selectedAssignees);
+
+            $collab = User::find($userId);
+            if ($collab) {
+                app(TaskActivityService::class)->logCollaboratorAdded($this->task, $collab);
+            }
+
             $this->dispatch('task-updated');
         }
     }
@@ -124,9 +163,19 @@ class TaskDetail extends Component
             $q->where('workspaces.id', $this->task->project->workspace_id);
         })->get();
 
+        $activitiesQuery = Activity::where('subject_type', Task::class)
+            ->where('subject_id', $this->task->id)
+            ->with('causer')
+            ->latest();
+
+        $totalActivitiesCount = (clone $activitiesQuery)->count();
+        $activities = $activitiesQuery->take($this->activityLimit)->get();
+
         return view('livewire.tasks.task-detail', [
             'workspaceMembers' => $workspaceMembers,
             'projectStatuses' => $this->task->project->statuses,
+            'activities' => $activities,
+            'totalActivitiesCount' => $totalActivitiesCount,
         ]);
     }
 }

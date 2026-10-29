@@ -6,8 +6,8 @@
     
     <div class="bg-white dark:bg-[#1e1f23] text-slate-900 dark:text-slate-100 rounded-2xl shadow-2xl border border-slate-200 dark:border-[#2f3036] w-full max-w-5xl max-h-[92vh] overflow-hidden flex flex-col"
          wire:click.stop
-         x-data
-         @keydown.escape.window="$wire.close()">
+         x-data="{ showDeleteConfirm: false }"
+         @keydown.escape.window="if (!showDeleteConfirm) { $wire.close() }">
         
         <!-- Header -->
         <div class="relative px-8 pt-6 pb-5 border-b border-slate-200 dark:border-[#2b2c31]">
@@ -50,7 +50,10 @@
                 </span>
                 @if($task->completed_at)
                     <span class="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
-                        ✓ Completed {{ $task->completed_at->diffForHumans() }}
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Completed {{ $task->completed_at->diffForHumans() }}
                     </span>
                 @endif
             </div>
@@ -93,13 +96,123 @@
                         <livewire:attachments.attachment-upload :task="$task" :key="'attachments-'.$task->id" />
                     </div>
 
-                    <!-- Comments Section -->
-                    <div class="space-y-3 pt-2 border-t border-slate-100 dark:border-[#2b2c31]">
-                        <h3 class="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-                            <svg class="w-3.5 h-3.5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-                            Activity & Discussion
-                        </h3>
-                        <livewire:comments.comment-list :task="$task" :key="'comments-'.$task->id" />
+                    <!-- Activity & Discussion Section with Tabs -->
+                    <div class="space-y-4 pt-2 border-t border-slate-100 dark:border-[#2b2c31]">
+                        <div class="flex items-center justify-between border-b border-slate-200 dark:border-[#2b2c31] pb-2">
+                            <div class="flex items-center gap-4">
+                                <button type="button" 
+                                        wire:click="setTab('comments')"
+                                        class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider pb-1 transition-colors {{ $activeTab === 'comments' ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-600' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200' }}">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                                    Comments ({{ $task->comments->count() }})
+                                </button>
+                                <button type="button" 
+                                        wire:click="setTab('activity')"
+                                        class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider pb-1 transition-colors {{ $activeTab === 'activity' ? 'text-purple-600 dark:text-purple-400 border-b-2 border-purple-600' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200' }}">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    Activity History ({{ $totalActivitiesCount }})
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Comments Tab Pane -->
+                        <div class="{{ $activeTab === 'comments' ? 'block' : 'hidden' }}">
+                            <livewire:comments.comment-list :task="$task" :key="'comments-'.$task->id" />
+                        </div>
+
+                        <!-- Activity History Tab Pane -->
+                        <div class="{{ $activeTab === 'activity' ? 'block' : 'hidden' }} space-y-4">
+                            @forelse($activities as $act)
+                                @php
+                                    $props = $act->properties ?? [];
+                                    $event = $act->event ?? $props['event_type'] ?? '';
+                                    $actor = $act->causer;
+                                    $actorInitial = $actor ? strtoupper(substr($actor->name, 0, 1)) : '?';
+                                @endphp
+                                <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-50/70 dark:bg-[#16171a] border border-slate-200/70 dark:border-[#2b2c31] transition-all hover:border-slate-300 dark:hover:border-[#383940]">
+                                    <!-- Actor Avatar / Event Icon -->
+                                    <div class="relative shrink-0">
+                                        <div class="w-8 h-8 rounded-full bg-clickup-gradient flex items-center justify-center text-white text-xs font-bold shadow-xs">
+                                            {{ $actorInitial }}
+                                        </div>
+                                        <span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] text-white bg-slate-700 border border-white dark:border-[#1e1f23]">
+                                            @if(str_contains($event, 'completed'))
+                                                <svg class="w-2.5 h-2.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                            @elseif(str_contains($event, 'status'))
+                                                <svg class="w-2.5 h-2.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                                            @elseif(str_contains($event, 'assign') || str_contains($event, 'collaborator'))
+                                                <svg class="w-2.5 h-2.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                            @elseif(str_contains($event, 'priority'))
+                                                <svg class="w-2.5 h-2.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
+                                            @elseif(str_contains($event, 'due'))
+                                                <svg class="w-2.5 h-2.5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            @elseif(str_contains($event, 'comment'))
+                                                <svg class="w-2.5 h-2.5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                                            @elseif(str_contains($event, 'attachment'))
+                                                <svg class="w-2.5 h-2.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                            @else
+                                                <svg class="w-2.5 h-2.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            @endif
+                                        </span>
+                                    </div>
+
+                                    <!-- Content -->
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <div class="text-xs text-slate-800 dark:text-slate-200">
+                                                <span class="font-bold text-slate-900 dark:text-white">{{ $actor?->name ?? 'System' }}</span>
+                                                <span class="text-slate-600 dark:text-slate-400 ml-1">{{ $act->description }}</span>
+                                            </div>
+                                            <span class="text-[10px] text-slate-400 shrink-0" title="{{ $act->created_at->toDayDateTimeString() }}">
+                                                {{ $act->created_at->diffForHumans() }}
+                                            </span>
+                                        </div>
+
+                                        <!-- Value Changes Badges if old/new exist -->
+                                        @if(isset($props['old']) || isset($props['new']))
+                                            <div class="mt-1.5 flex items-center gap-1.5 text-[11px]">
+                                                @if(isset($props['old']) && $props['old'] !== null && $props['old'] !== '')
+                                                    <span class="px-1.5 py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 line-through font-medium border border-rose-200 dark:border-rose-900">
+                                                        {{ $props['old'] }}
+                                                    </span>
+                                                    <span class="text-slate-400 text-[10px]">&rarr;</span>
+                                                @endif
+                                                @if(isset($props['new']) && $props['new'] !== null && $props['new'] !== '')
+                                                    <span class="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-200 dark:border-emerald-900">
+                                                        {{ $props['new'] }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        @endif
+
+                                        <!-- Extra comment preview if available -->
+                                        @if(!empty($props['comment_body']))
+                                            <div class="mt-1.5 p-2 rounded-lg bg-white dark:bg-[#1a1b1f] border border-slate-200 dark:border-[#2b2c31] text-[11px] text-slate-600 dark:text-slate-300 italic">
+                                                "{{ \Illuminate\Support\Str::limit($props['comment_body'], 140) }}"
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center py-8 px-4 rounded-xl border border-dashed border-slate-200 dark:border-[#2b2c31] bg-slate-50/50 dark:bg-[#16171a]/50">
+                                    <svg class="w-8 h-8 mx-auto text-slate-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <p class="text-xs font-medium text-slate-600 dark:text-slate-400">No activity recorded for this task yet.</p>
+                                    <p class="text-[11px] text-slate-400 mt-0.5">Actions and changes on this task will appear here.</p>
+                                </div>
+                            @endforelse
+
+                            @if($totalActivitiesCount > $activityLimit)
+                                <div class="text-center pt-2">
+                                    <button type="button" 
+                                            wire:click="loadMoreActivity" 
+                                            class="px-4 py-1.5 rounded-lg text-xs font-semibold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/50 border border-purple-200 dark:border-purple-900 transition-colors">
+                                        Load more activities ({{ $totalActivitiesCount - $activityLimit }} remaining)
+                                    </button>
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
 
@@ -122,10 +235,10 @@
                         <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Priority</label>
                         <select wire:model.live="priority"
                                 class="w-full text-xs font-semibold bg-white dark:bg-[#202126] border border-slate-200 dark:border-[#35363b] rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            <option value="urgent">🔴 Urgent</option>
-                            <option value="high">🟠 High</option>
-                            <option value="normal">🔵 Normal</option>
-                            <option value="low">⚪ Low</option>
+                            <option value="urgent">⬛ Urgent</option>
+                            <option value="high">▲ High</option>
+                            <option value="normal">● Normal</option>
+                            <option value="low">○ Low</option>
                         </select>
                     </div>
 
@@ -236,8 +349,9 @@
                                                 </div>
                                             </div>
                                             @if($isSelected)
-                                                <span class="text-[10px] font-bold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/60 px-1.5 py-0.5 rounded">
-                                                    ✓ Selected
+                                                <span class="text-[10px] font-bold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/60 px-1.5 py-0.5 rounded inline-flex items-center gap-0.5">
+                                                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                                    Selected
                                                 </span>
                                             @endif
                                         </div>
@@ -252,30 +366,87 @@
         </div>
 
         <!-- Footer -->
-        <div class="border-t border-slate-200 dark:border-[#2b2c31] px-8 py-4 bg-slate-50 dark:bg-[#18191c] flex items-center justify-between">
-            <div>
+        <div class="border-t border-slate-200 dark:border-[#2b2c31] px-6 py-4 bg-slate-50 dark:bg-[#18191c] flex items-center justify-between gap-4"
+             x-data="{ showDeleteConfirm: false }">
+
+            <!-- Left: Status feedback -->
+            <div class="shrink-0">
                 @if (session()->has('message'))
-                    <span class="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                        ✓ {{ session('message') }}
+                    <span class="inline-flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        {{ session('message') }}
                     </span>
                 @endif
             </div>
 
-            <div class="flex items-center gap-3">
+            <!-- Right: Actions -->
+            <div class="flex items-center gap-2 ml-auto">
                 @can('delete', $task)
-                    <button wire:click="delete"
-                            wire:confirm="Are you sure you want to delete this task?"
-                            class="px-4 py-2 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-colors">
-                        Delete Task
-                    </button>
+                    <!-- Delete button — opens inline confirmation -->
+                    <div class="relative" x-cloak>
+                        <!-- Confirmation Panel (shown on click) -->
+                        <div x-show="showDeleteConfirm"
+                             x-cloak
+                             x-transition:enter="transition ease-out duration-150"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             class="absolute bottom-full right-0 mb-2 w-72 bg-white dark:bg-[#1e1f23] border border-rose-200 dark:border-rose-900/60 rounded-xl shadow-xl p-4 z-10">
+                            <div class="flex items-start gap-3 mb-3">
+                                <div class="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 shrink-0">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold text-slate-900 dark:text-white">Delete this task?</p>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+                                        This will permanently remove the task, all its comments, attachments, and activity history. This action cannot be undone.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 justify-end">
+                                <button type="button" 
+                                        @click="showDeleteConfirm = false"
+                                        class="px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#2a2b2f] rounded-lg border border-slate-200 dark:border-[#35363b] transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="button"
+                                        wire:click="delete"
+                                        wire:loading.attr="disabled"
+                                        @click="showDeleteConfirm = false"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors disabled:opacity-60">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                    <span wire:loading.remove wire:target="delete">Delete</span>
+                                    <span wire:loading wire:target="delete">Deleting...</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Delete Trigger Button -->
+                        <button type="button"
+                                @click="showDeleteConfirm = !showDeleteConfirm"
+                                class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/30 border border-rose-200 dark:border-rose-900/60 rounded-lg transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            </svg>
+                            Delete Task
+                        </button>
+                    </div>
                 @endcan
 
                 @can('update', $task)
-                <button wire:click="save"
-                        class="inline-flex items-center gap-1.5 px-5 py-2 bg-clickup-gradient text-white text-xs font-semibold rounded-lg shadow-sm hover:opacity-95 transition-all">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    Save Changes
-                </button>
+                    <button wire:click="save"
+                            wire:loading.attr="disabled"
+                            class="inline-flex items-center gap-1.5 px-5 py-2 bg-clickup-gradient text-white text-xs font-semibold rounded-lg shadow-sm hover:opacity-95 active:scale-95 transition-all disabled:opacity-60">
+                        <svg class="w-3.5 h-3.5" wire:loading.remove wire:target="save" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <svg class="w-3.5 h-3.5 animate-spin" wire:loading wire:target="save" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                        <span wire:loading.remove wire:target="save">Save Changes</span>
+                        <span wire:loading wire:target="save">Saving...</span>
+                    </button>
                 @endcan
             </div>
         </div>

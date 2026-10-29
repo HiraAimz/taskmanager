@@ -35,12 +35,8 @@ class CreateTask
                 $task->tags()->sync($data['tags']);
             }
 
-            // Log activity
-            activity()
-                ->performedOn($task)
-                ->causedBy(auth()->user())
-                ->withProperties(['title' => $task->title])
-                ->log('created task');
+            // Log activity and notify
+            app(\App\Services\TaskActivityService::class)->logTaskCreated($task);
 
             return $task->load('assignee', 'tags', 'status');
         });

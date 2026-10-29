@@ -21,6 +21,14 @@ class AttachmentUpload extends Component
 
     public function updatedFiles(): void
     {
+        $user = auth()->user();
+        abort_unless(
+            $user->hasRole('Admin') ||
+            $user->can('attachment.upload') ||
+            $user->can('view', $this->task),
+            403
+        );
+
         $this->validate([
             'files.*' => ['file', 'max:10240', 'mimes:pdf,doc,docx,xls,xlsx,png,jpg,jpeg,gif,zip'],
         ]);
@@ -33,6 +41,7 @@ class AttachmentUpload extends Component
 
         $this->files = [];
         $this->task = $this->task->fresh('attachments.user');
+        $this->dispatch('task-updated');
     }
 
     public function deleteAttachment(int $attachmentId): void
@@ -40,7 +49,7 @@ class AttachmentUpload extends Component
         $attachment = Attachment::findOrFail($attachmentId);
 
         // Check authorization
-        if ($attachment->user_id !== auth()->id() && !auth()->user()->hasRole('Admin')) {
+        if ($attachment->user_id !== auth()->id() && !auth()->user()->hasRole('Admin') && !auth()->user()->can('attachment.delete')) {
             abort(403);
         }
 

@@ -6,6 +6,7 @@ namespace App\Actions\Comments;
 
 use App\Models\Comment;
 use App\Models\Task;
+use App\Services\TaskActivityService;
 use Illuminate\Support\Facades\DB;
 
 class CreateComment
@@ -20,11 +21,7 @@ class CreateComment
                 'body' => $content,
             ]);
 
-            // Log activity
-            activity()
-                ->performedOn($task)
-                ->causedBy(auth()->user())
-                ->log('added comment');
+            app(TaskActivityService::class)->logCommentAdded($task, $comment);
 
             return $comment->load('user');
         });

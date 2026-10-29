@@ -6,11 +6,15 @@ namespace App\Livewire\Messages;
 
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Models\MessageAttachment;
 use App\Models\Workspace;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class DirectMessages extends Component
 {
+    use WithFileUploads;
     public ?int $activeWorkspaceId = null;
 
     public ?int $activeConversationId = null;
@@ -20,6 +24,9 @@ class DirectMessages extends Component
     public string $searchUser = '';
 
     public bool $showNewChatModal = false;
+
+    /** @var array<\Livewire\Features\SupportFileUploads\TemporaryUploadedFile> */
+    public array $messageFiles = [];
 
     public function mount(?int $conversationId = null): void
     {
@@ -111,7 +118,9 @@ class DirectMessages extends Component
         );
 
         $this->validate([
-            'newMessage' => ['required', 'string', 'max:2000'],
+            'newMessage'   => ['required_without:messageFiles', 'nullable', 'string', 'max:2000'],
+            'messageFiles' => ['nullable', 'array', 'max:5'],
+            'messageFiles.*' => ['file', 'max:10240'],
         ]);
 
         if (!$this->activeConversationId) {
@@ -127,14 +136,31 @@ class DirectMessages extends Component
             return;
         }
 
-        Message::create([
+        $message = Message::create([
             'conversation_id' => $conversation->id,
-            'sender_id' => auth()->id(),
-            'body' => trim($this->newMessage),
+            'sender_id'       => auth()->id(),
+            'body'            => trim($this->newMessage) ?: null,
         ]);
 
+        // Upload attachments
+        foreach ($this->messageFiles as $file) {
+            $path = $file->store('message-attachments', 'local');
+
+            MessageAttachment::create([
+                'message_id'    => $message->id,
+                'user_id'       => auth()->id(),
+                'original_name' => $file->getClientOriginalName(),
+                'disk_path'     => $path,
+                'file_type'     => $file->getMimeType(),
+                'file_size'     => $file->getSize(),
+            ]);
+        }
+
         $conversation->update(['last_message_at' => now()]);
-        $this->newMessage = '';
+        $this->newMessage   = '';
+        $this->messageFiles = [];
+
+        $this->dispatch('message-sent');
     }
 
     public function markCurrentConversationRead(): void
@@ -192,7 +218,7 @@ class DirectMessages extends Component
                 if ($activeConversation) {
                     $this->markCurrentConversationRead();
                     $messages = $activeConversation->messages()
-                        ->with('sender')
+                        ->with('sender', 'attachments')
                         ->get();
                 }
             }

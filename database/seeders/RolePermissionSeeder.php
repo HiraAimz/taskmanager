@@ -30,6 +30,8 @@ class RolePermissionSeeder extends Seeder
             'workspace.edit',
             'workspace.delete',
             'workspace.manage_members',
+            'workspace.view_progress',
+            'workspace.view_all_tasks',
 
             // Projects
             'manage-projects',
@@ -96,6 +98,8 @@ class RolePermissionSeeder extends Seeder
             'workspace.view',
             'workspace.edit',
             'workspace.manage_members',
+            'workspace.view_progress',
+            'workspace.view_all_tasks',
             'manage-projects',
             'project.view',
             'project.create',

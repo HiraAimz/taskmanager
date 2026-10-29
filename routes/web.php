@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\CommentAttachmentController;
+use App\Http\Controllers\MessageAttachmentController;
+use App\Livewire\Admin\GlobalProgress;
 use App\Livewire\Admin\RoleCreate;
 use App\Livewire\Admin\RoleEdit;
 use App\Livewire\Admin\RoleIndex;
@@ -21,6 +24,7 @@ use App\Livewire\Tasks\TaskList;
 use App\Livewire\Workspaces\WorkspaceCreate;
 use App\Livewire\Workspaces\WorkspaceEdit;
 use App\Livewire\Workspaces\WorkspaceIndex;
+use App\Livewire\Workspaces\WorkspaceProgress;
 use App\Models\Project;
 use App\Models\Workspace;
 use Illuminate\Support\Facades\Route;
@@ -58,6 +62,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('/roles/{role}/edit', RoleEdit::class)
         ->middleware('role_or_permission:Admin|role.edit|manage-users')
         ->name('roles.edit');
+    Route::get('/progress', GlobalProgress::class)
+        ->middleware('role_or_permission:Admin|manage-workspaces')
+        ->name('progress');
 });
 
 // Direct Messages
@@ -74,6 +81,8 @@ Route::middleware('auth')->prefix('workspaces')->name('workspaces.')->group(func
     Route::get('/{workspace}/edit', WorkspaceEdit::class)
         ->name('edit')
         ->can('update', 'workspace');
+    Route::get('/{workspace}/progress', WorkspaceProgress::class)
+        ->name('progress');
 });
 
 // Project routes - authenticated users with policy checks
@@ -104,9 +113,33 @@ Route::get('/my-tasks', MyTasks::class)
     ->name('my-tasks')
     ->middleware('auth');
 
-// Attachment download route
+// Notification Preferences
+Route::get('/settings/notifications', \App\Livewire\Profile\NotificationPreferences::class)
+    ->name('profile.notifications')
+    ->middleware('auth');
+
+// Attachment download and preview routes
 Route::get('/attachments/{attachment}/download', [AttachmentController::class, 'download'])
     ->name('attachments.download')
+    ->middleware('auth');
+Route::get('/attachments/{attachment}/preview', [AttachmentController::class, 'preview'])
+    ->name('attachments.preview')
+    ->middleware('auth');
+
+// Comment attachment download and preview
+Route::get('/comment-attachments/{attachment}/download', [CommentAttachmentController::class, 'download'])
+    ->name('comment-attachments.download')
+    ->middleware('auth');
+Route::get('/comment-attachments/{attachment}/preview', [CommentAttachmentController::class, 'preview'])
+    ->name('comment-attachments.preview')
+    ->middleware('auth');
+
+// Message attachment download and preview
+Route::get('/message-attachments/{attachment}/download', [MessageAttachmentController::class, 'download'])
+    ->name('message-attachments.download')
+    ->middleware('auth');
+Route::get('/message-attachments/{attachment}/preview', [MessageAttachmentController::class, 'preview'])
+    ->name('message-attachments.preview')
     ->middleware('auth');
 
 // Login and logout routes - no public registration
