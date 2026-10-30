@@ -94,6 +94,12 @@ class AttachmentsInCommentsAndMessagesTest extends TestCase
         $attachment = CommentAttachment::where('original_name', 'screenshot.png')->first();
         $this->assertNotNull($attachment);
         Storage::disk('local')->assertExists($attachment->disk_path);
+
+        $this->get(route('comment-attachments.preview', $attachment))
+            ->assertOk()
+            ->assertHeader('Content-Disposition', 'inline; filename=screenshot.png');
+        $this->get(route('comment-attachments.preview', $attachment).'?thumbnail=1')
+            ->assertOk();
     }
 
     public function test_user_can_download_comment_attachment(): void
@@ -169,6 +175,12 @@ class AttachmentsInCommentsAndMessagesTest extends TestCase
         $attachment = MessageAttachment::where('original_name', 'design.png')->first();
         $this->assertNotNull($attachment);
         Storage::disk('local')->assertExists($attachment->disk_path);
+
+        $this->get(route('message-attachments.preview', $attachment))
+            ->assertOk()
+            ->assertHeader('Content-Disposition', 'inline; filename=design.png');
+        $this->get(route('message-attachments.preview', $attachment).'?thumbnail=1')
+            ->assertOk();
     }
 
     public function test_conversation_participants_can_download_message_attachment(): void

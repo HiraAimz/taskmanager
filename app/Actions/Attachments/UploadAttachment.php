@@ -29,7 +29,7 @@ class UploadAttachment
                 'user_id' => auth()->id(),
                 'disk_path' => $path,
                 'original_name' => $file->getClientOriginalName(),
-                'mime_type' => $file->getClientMimeType(),
+                'mime_type' => $file->getMimeType(),
                 'size' => $file->getSize(),
             ]);
 

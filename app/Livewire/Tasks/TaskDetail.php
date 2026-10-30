@@ -23,13 +23,15 @@ class TaskDetail extends Component
 
     public string $priority;
 
-    public ?int $statusId;
+    public ?int $statusId = null;
 
-    public ?int $assigneeId;
+    public ?int $assigneeId = null;
 
     public array $selectedAssignees = [];
 
-    public ?string $dueDate;
+    public ?string $startDate = null;
+
+    public ?string $dueDate = null;
 
     public int $activityLimit = 10;
 
@@ -48,6 +50,7 @@ class TaskDetail extends Component
         $this->statusId = $this->task->status_id;
         $this->assigneeId = $this->task->assignee_id;
         $this->selectedAssignees = $this->task->assignees->pluck('id')->toArray();
+        $this->startDate = $this->task->start_date?->format('Y-m-d');
         $this->dueDate = $this->task->due_date?->format('Y-m-d');
     }
 
@@ -83,7 +86,8 @@ class TaskDetail extends Component
             'assigneeId' => ['nullable', 'exists:users,id'],
             'selectedAssignees' => ['array'],
             'selectedAssignees.*' => ['exists:users,id'],
-            'dueDate' => ['nullable', 'date'],
+            'startDate' => ['nullable', 'date'],
+            'dueDate' => ['nullable', 'date', 'after_or_equal:startDate'],
         ]);
 
         $action = new UpdateTask();
@@ -93,6 +97,7 @@ class TaskDetail extends Component
             'priority' => $this->priority,
             'status_id' => $this->statusId,
             'assignee_id' => $this->assigneeId,
+            'start_date' => $this->startDate,
             'due_date' => $this->dueDate,
         ]);
 

@@ -157,8 +157,8 @@
                                          class="relative group rounded-xl overflow-hidden border border-slate-200 dark:border-[#2f3036] bg-slate-100 dark:bg-[#16171a] shadow-xs max-w-[240px]">
                                         <!-- Image Display -->
                                         <template x-if="!failed">
-                                            <a href="{{ route('comment-attachments.preview', $img) }}" target="_blank" class="block overflow-hidden cursor-zoom-in">
-                                                <img src="{{ route('comment-attachments.preview', $img) }}" 
+                                            <a href="{{ route('comment-attachments.preview', $img) }}" target="_blank" rel="noopener noreferrer" class="block overflow-hidden cursor-zoom-in">
+                                                <img src="{{ route('comment-attachments.preview', $img) }}?thumbnail=1"
                                                      alt="{{ $img->original_name }}"
                                                      x-on:error="failed = true"
                                                      loading="lazy"
@@ -207,10 +207,18 @@
                                         <svg class="w-3.5 h-3.5 text-rose-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                         </svg>
-                                        <span class="text-[10px] font-medium text-slate-700 dark:text-slate-300 max-w-[120px] truncate">
-                                            {{ $att->original_name }}
-                                        </span>
+                                        <a href="{{ route('comment-attachments.preview', $att) }}"
+                                           target="_blank" rel="noopener noreferrer"
+                                           class="max-w-[120px] truncate text-[10px] font-medium text-slate-700 hover:text-purple-600 dark:text-slate-300 dark:hover:text-purple-400"
+                                           title="Open preview">{{ $att->original_name }}</a>
                                         <span class="text-[9px] text-slate-400">{{ $att->file_size_kb }} KB</span>
+                                        <a href="{{ route('comment-attachments.download', $att) }}"
+                                           class="text-purple-500 hover:text-purple-700 transition-colors ml-0.5"
+                                           title="Download original">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                            </svg>
+                                        </a>
                                         <a href="{{ route('comment-attachments.download', $att) }}"
                                            class="text-purple-500 hover:text-purple-700 transition-colors ml-0.5"
                                            title="Download">

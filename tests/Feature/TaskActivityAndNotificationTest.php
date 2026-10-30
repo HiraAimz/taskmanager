@@ -290,6 +290,30 @@ class TaskActivityAndNotificationTest extends TestCase
             ->assertSee('In Progress');
     }
 
+    public function test_task_detail_saves_dates_when_task_has_no_assignee(): void
+    {
+        $task = Task::factory()->create([
+            'project_id' => $this->project->id,
+            'status_id' => $this->todoStatus->id,
+            'creator_id' => $this->owner->id,
+            'assignee_id' => null,
+        ]);
+
+        $this->actingAs($this->owner);
+
+        Livewire::test(TaskDetail::class, ['taskId' => $task->id])
+            ->assertSee('Start Date')
+            ->assertSee('Due Date')
+            ->set('startDate', '2026-10-01')
+            ->set('dueDate', '2026-10-15')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $task->refresh();
+        $this->assertSame('2026-10-01', $task->start_date->format('Y-m-d'));
+        $this->assertSame('2026-10-15', $task->due_date->format('Y-m-d'));
+    }
+
     public function test_notification_failure_does_not_break_task_operation(): void
     {
         // Notification service failure isolation test

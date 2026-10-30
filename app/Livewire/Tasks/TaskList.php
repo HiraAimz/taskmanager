@@ -33,6 +33,15 @@ class TaskList extends Component
     {
         $this->authorize('view', $project);
         $this->project = $project->loadMissing(['workspace.projects', 'statuses']);
+
+        $taskId = request()->integer('task');
+        if ($taskId > 0) {
+            $task = $this->project->tasks()->find($taskId);
+            if ($task) {
+                $this->authorize('view', $task);
+                $this->selectedTaskId = $task->id;
+            }
+        }
     }
 
     #[On('task-created')]

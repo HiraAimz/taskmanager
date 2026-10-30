@@ -197,6 +197,32 @@ class TaskActivityService
     }
 
     /**
+     * Helper to log start date change.
+     */
+    public function logStartDateChange(Task $task, ?string $oldStartDate, ?string $newStartDate, ?User $actor = null): Activity
+    {
+        $actor ??= auth()->user();
+
+        $desc = match (true) {
+            $oldStartDate === null && $newStartDate !== null => "set start date to {$newStartDate}",
+            $oldStartDate !== null && $newStartDate === null => "removed start date (was {$oldStartDate})",
+            default => "changed start date from {$oldStartDate} to {$newStartDate}",
+        };
+
+        return $this->logAndNotify(
+            task: $task,
+            event: 'task_updated',
+            description: $desc,
+            changes: [
+                'field_name' => 'Start Date',
+                'old' => $oldStartDate,
+                'new' => $newStartDate,
+            ],
+            actor: $actor
+        );
+    }
+
+    /**
      * Helper to log due date change.
      */
     public function logDueDateChange(Task $task, ?string $oldDueDate, ?string $newDueDate, ?User $actor = null): Activity

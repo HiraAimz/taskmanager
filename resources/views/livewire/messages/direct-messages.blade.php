@@ -17,16 +17,55 @@
 
             <!-- Workspace Switcher Pill -->
             @if($userWorkspaces->count() > 1)
-                <div class="flex items-center gap-2 bg-white dark:bg-[#1a1b1e] border border-slate-200/80 dark:border-[#2a2b2f] p-1 rounded-xl shadow-2xs">
-                    <span class="text-[11px] font-bold text-slate-400 pl-2">Workspace:</span>
-                    <select wire:change="switchWorkspace($event.target.value)" 
-                            class="text-xs font-semibold bg-transparent border-none text-slate-900 dark:text-white focus:ring-0 cursor-pointer py-1 pr-6">
+                <div x-data="{ open: false }"
+                     @click.outside="open = false"
+                     @keydown.escape.window="open = false"
+                     class="relative flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white p-1 shadow-2xs dark:border-[#2a2b2f] dark:bg-[#1a1b1e]">
+                    <span class="pl-2 text-[11px] font-bold text-slate-400">Workspace:</span>
+                    <button type="button"
+                            @click="open = !open"
+                            :aria-expanded="open.toString()"
+                            aria-haspopup="listbox"
+                            class="flex min-w-0 max-w-56 items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs font-semibold text-slate-800 transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-purple-500/30 dark:text-slate-100 dark:hover:bg-[#25262a]">
+                        <span class="truncate">{{ $userWorkspaces->firstWhere('id', $activeWorkspaceId)?->name ?? 'Select workspace' }}</span>
+                        <svg class="h-3.5 w-3.5 shrink-0 text-slate-500 transition-transform dark:text-slate-400"
+                             :class="open ? 'rotate-180' : ''"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+
+                    <div x-cloak
+                         x-show="open"
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
+                         role="listbox"
+                         aria-label="Select workspace"
+                         style="top: calc(100% + 0.5rem)"
+                         class="absolute right-0 z-50 max-h-64 min-w-56 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1 shadow-xl dark:border-[#35363b] dark:bg-[#1e1f23]">
                         @foreach($userWorkspaces as $ws)
-                            <option value="{{ $ws->id }}" {{ $activeWorkspaceId === $ws->id ? 'selected' : '' }}>
-                                {{ $ws->name }}
-                            </option>
+                            @php
+                                $isActiveWorkspace = $activeWorkspaceId === $ws->id;
+                            @endphp
+                            <button type="button"
+                                    role="option"
+                                    aria-selected="{{ $isActiveWorkspace ? 'true' : 'false' }}"
+                                    @click="$wire.switchWorkspace({{ $ws->id }}); open = false"
+                                    class="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-left text-xs transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500/40 {{ $isActiveWorkspace ? 'bg-purple-50 font-semibold text-purple-700 dark:bg-purple-950/40 dark:text-purple-300' : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-[#2a2b2f]' }}">
+                                <span class="truncate">{{ $ws->name }}</span>
+                                @if($isActiveWorkspace)
+                                    <svg class="h-3.5 w-3.5 shrink-0 text-purple-600 dark:text-purple-400"
+                                         fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                @endif
+                            </button>
                         @endforeach
-                    </select>
+                    </div>
                 </div>
             @endif
         </div>
@@ -182,8 +221,8 @@
                                                          x-data="{ failed: false }"
                                                          class="relative group rounded-xl overflow-hidden border {{ $isMe ? 'border-white/20' : 'border-slate-200 dark:border-[#35363b]' }} shadow-xs">
                                                         <template x-if="!failed">
-                                                            <a href="{{ route('message-attachments.preview', $img) }}" target="_blank" class="block overflow-hidden cursor-zoom-in">
-                                                                <img src="{{ route('message-attachments.preview', $img) }}" 
+                                                            <a href="{{ route('message-attachments.preview', $img) }}" target="_blank" rel="noopener noreferrer" class="block overflow-hidden cursor-zoom-in">
+                                                                <img src="{{ route('message-attachments.preview', $img) }}?thumbnail=1"
                                                                      alt="{{ $img->original_name }}"
                                                                      x-on:error="failed = true"
                                                                      loading="lazy"
@@ -211,21 +250,25 @@
                                         @if($msgFiles->isNotEmpty())
                                             <div class="mt-2 space-y-1 {{ ($msg->body || $msgImages->isNotEmpty()) ? 'border-t border-white/20 pt-2' : '' }}">
                                                 @foreach($msgFiles as $att)
-                                                    <a href="{{ route('message-attachments.download', $att) }}"
-                                                       class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg {{ $isMe ? 'bg-white/15 hover:bg-white/25' : 'bg-white dark:bg-[#2a2b2f] hover:bg-slate-50 dark:hover:bg-[#303136]' }} transition-colors group">
+                                                    <div class="flex min-w-0 items-center gap-2 rounded-lg px-2.5 py-1.5 {{ $isMe ? 'bg-white/15 hover:bg-white/25' : 'bg-white dark:bg-[#2a2b2f] hover:bg-slate-50 dark:hover:bg-[#303136]' }} transition-colors group">
                                                         <svg class="w-3.5 h-3.5 {{ $isMe ? 'text-white/80' : 'text-slate-400' }} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
                                                         </svg>
-                                                        <span class="text-[10px] font-medium {{ $isMe ? 'text-white/90' : 'text-slate-700 dark:text-slate-300' }} truncate max-w-[140px]">
-                                                            {{ $att->original_name }}
-                                                        </span>
+                                                        <a href="{{ route('message-attachments.preview', $att) }}"
+                                                           target="_blank" rel="noopener noreferrer"
+                                                           class="max-w-[140px] truncate text-[10px] font-medium {{ $isMe ? 'text-white/90' : 'text-slate-700 dark:text-slate-300' }} hover:underline"
+                                                           title="Open preview">{{ $att->original_name }}</a>
                                                         <span class="text-[9px] {{ $isMe ? 'text-white/60' : 'text-slate-400' }} ml-auto flex-shrink-0">
                                                             {{ $att->file_size_kb }} KB
                                                         </span>
-                                                        <svg class="w-3 h-3 {{ $isMe ? 'text-white/70' : 'text-purple-500' }} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                                                        </svg>
-                                                    </a>
+                                                        <a href="{{ route('message-attachments.download', $att) }}"
+                                                           class="shrink-0 rounded p-1 {{ $isMe ? 'text-white/70 hover:text-white' : 'text-purple-500 hover:text-purple-700' }}"
+                                                           title="Download original" aria-label="Download {{ $att->original_name }}">
+                                                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                                            </svg>
+                                                        </a>
+                                                    </div>
                                                 @endforeach
                                             </div>
                                         @endif

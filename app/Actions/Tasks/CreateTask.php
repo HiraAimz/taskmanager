@@ -18,6 +18,9 @@ class CreateTask
                 ['position' => 0]
             );
 
+            $startDate = $data['start_date'] ?? null;
+            $dueDate = $data['due_date'] ?? null;
+
             $task = Task::create([
                 'project_id' => $projectId,
                 'status_id' => $statusId,
@@ -25,7 +28,8 @@ class CreateTask
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
                 'priority' => $data['priority'] ?? 'normal',
-                'due_date' => $data['due_date'] ?? null,
+                'start_date' => $startDate,
+                'due_date' => $dueDate,
                 'creator_id' => auth()->id(),
                 'assignee_id' => $data['assignee_id'] ?? auth()->id(),
             ]);

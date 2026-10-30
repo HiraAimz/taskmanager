@@ -22,6 +22,7 @@ class UpdateTask
             $oldAssignee = $task->assignee;
             $oldPriority = $task->priority?->value ?? (string) $task->priority;
             $oldDueDate = $task->due_date?->format('Y-m-d');
+            $oldStartDate = $task->start_date?->format('Y-m-d');
             $oldTitle = $task->title;
             $oldDescription = $task->description;
 
@@ -31,6 +32,8 @@ class UpdateTask
             $hasPriorityChange = isset($data['priority']) && $oldPriority !== (string) $data['priority'];
             $newDue = ! empty($data['due_date']) ? \Illuminate\Support\Carbon::parse($data['due_date'])->format('Y-m-d') : null;
             $hasDueDateChange = array_key_exists('due_date', $data) && $oldDueDate !== $newDue;
+            $newStart = ! empty($data['start_date']) ? \Illuminate\Support\Carbon::parse($data['start_date'])->format('Y-m-d') : null;
+            $hasStartDateChange = array_key_exists('start_date', $data) && $oldStartDate !== $newStart;
             $hasTitleChange = isset($data['title']) && $task->title !== $data['title'];
             $hasDescChange = array_key_exists('description', $data) && $task->description !== $data['description'];
 
@@ -38,11 +41,12 @@ class UpdateTask
                 'title' => $data['title'] ?? $task->title,
                 'description' => $data['description'] ?? $task->description,
                 'priority' => $data['priority'] ?? $task->priority,
-                'due_date' => $data['due_date'] ?? $task->due_date,
+                'start_date' => array_key_exists('start_date', $data) ? $data['start_date'] : $task->start_date,
+                'due_date' => array_key_exists('due_date', $data) ? $data['due_date'] : $task->due_date,
                 'status_id' => $data['status_id'] ?? $task->status_id,
                 'task_list_id' => $data['task_list_id'] ?? $task->task_list_id,
                 'assignee_id' => array_key_exists('assignee_id', $data) ? $data['assignee_id'] : $task->assignee_id,
-            ], fn ($value) => $value !== null || array_key_exists('assignee_id', $data) || array_key_exists('due_date', $data) || array_key_exists('description', $data)));
+            ], fn ($value) => $value !== null || array_key_exists('assignee_id', $data) || array_key_exists('due_date', $data) || array_key_exists('start_date', $data) || array_key_exists('description', $data)));
 
             $task->load('status', 'assignee');
 
@@ -68,6 +72,11 @@ class UpdateTask
             // Log priority change
             if ($hasPriorityChange) {
                 $activityService->logPriorityChange($task, $oldPriority, (string) $data['priority']);
+            }
+
+            // Log start date change
+            if ($hasStartDateChange) {
+                $activityService->logStartDateChange($task, $oldStartDate, $newStart);
             }
 
             // Log due date change

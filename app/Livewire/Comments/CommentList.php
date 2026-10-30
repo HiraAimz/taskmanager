@@ -34,7 +34,7 @@ class CommentList extends Component
         $this->validate([
             'newComment'    => ['required_without:commentFiles', 'nullable', 'string', 'max:5000'],
             'commentFiles'  => ['nullable', 'array', 'max:5'],
-            'commentFiles.*'=> ['file', 'max:10240'], // 10MB per file
+            'commentFiles.*'=> ['file', 'max:10240', 'mimes:avif,bmp,csv,doc,docx,gif,jpg,jpeg,md,pdf,png,ppt,pptx,svg,txt,webp,xls,xlsx,zip'],
         ]);
 
         // Create the comment (body can be empty if only files)

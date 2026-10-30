@@ -120,7 +120,7 @@ class DirectMessages extends Component
         $this->validate([
             'newMessage'   => ['required_without:messageFiles', 'nullable', 'string', 'max:2000'],
             'messageFiles' => ['nullable', 'array', 'max:5'],
-            'messageFiles.*' => ['file', 'max:10240'],
+            'messageFiles.*' => ['file', 'max:10240', 'mimes:avif,bmp,csv,doc,docx,gif,jpg,jpeg,md,pdf,png,ppt,pptx,svg,txt,webp,xls,xlsx,zip'],
         ]);
 
         if (!$this->activeConversationId) {

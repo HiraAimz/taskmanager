@@ -22,7 +22,7 @@
                 <input type="checkbox" 
                        wire:click="toggleItem({{ $item->id }})"
                        {{ $item->is_completed ? 'checked' : '' }}
-                       class="rounded border-slate-300 dark:border-slate-600 text-purple-600 focus:ring-purple-500 cursor-pointer w-4 h-4">
+                       class="rounded border-slate-300 dark:border-slate-600 text-purple-600 accent-purple-600 focus:ring-purple-500 cursor-pointer w-4 h-4">
 
                 <!-- Item Content -->
                 <div class="flex-1 min-w-0">

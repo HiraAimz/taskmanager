@@ -30,7 +30,7 @@ class AttachmentUpload extends Component
         );
 
         $this->validate([
-            'files.*' => ['file', 'max:10240', 'mimes:pdf,doc,docx,xls,xlsx,png,jpg,jpeg,gif,zip'],
+            'files.*' => ['file', 'max:10240', 'mimes:avif,bmp,csv,doc,docx,gif,jpg,jpeg,md,pdf,png,ppt,pptx,svg,txt,webp,xls,xlsx,zip'],
         ]);
 
         $action = new UploadAttachment();

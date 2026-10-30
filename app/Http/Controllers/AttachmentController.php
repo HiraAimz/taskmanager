@@ -5,68 +5,46 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Attachment;
-use Illuminate\Support\Facades\Storage;
+use App\Models\Task;
+use App\Services\AttachmentFileService;
+use Illuminate\Support\Facades\Gate;
 
 class AttachmentController extends Controller
 {
-    public function download(Attachment $attachment): mixed
+    public function download(Attachment $attachment, AttachmentFileService $files): mixed
     {
-        // Check if user has access to this attachment's task's workspace
         $task = $attachment->attachable;
-
-        if (!$task || !$task->project) {
+        if (! $task instanceof Task) {
             abort(404);
         }
 
-        $workspace = $task->project->workspace;
+        Gate::authorize('view', $task);
 
-        if (!auth()->user()->hasRole('Admin') && !auth()->user()->workspaces()->where('workspaces.id', $workspace->id)->exists()) {
-            abort(403, 'Unauthorized access to attachment');
-        }
-
-        $path = $attachment->disk_path ?? $attachment->file_path;
-        $name = $attachment->original_name ?? $attachment->file_name;
-
-        // Check if file exists
-        if (!$path || !Storage::disk('local')->exists($path)) {
-            abort(404, 'File not found');
-        }
-
-        return response()->download(
-            Storage::disk('local')->path($path),
-            $name
-        );
+        return $files->download($attachment->disk_path ?? $attachment->file_path, $attachment->original_name ?? $attachment->file_name);
     }
 
-    public function preview(Attachment $attachment): mixed
+    public function preview(Attachment $attachment, AttachmentFileService $files): mixed
     {
         $task = $attachment->attachable;
-
-        if (!$task || !$task->project) {
+        if (! $task instanceof Task) {
             abort(404);
         }
 
-        $workspace = $task->project->workspace;
-
-        if (!auth()->user()->hasRole('Admin') && !auth()->user()->workspaces()->where('workspaces.id', $workspace->id)->exists()) {
-            abort(403, 'Unauthorized access to attachment');
-        }
-
-        $path = $attachment->disk_path ?? $attachment->file_path;
+        Gate::authorize('view', $task);
         $name = $attachment->original_name ?? $attachment->file_name ?? 'file';
-        $mime = $attachment->file_type ?: 'application/octet-stream';
+        $response = $files->preview(
+            $attachment->disk_path ?? $attachment->file_path,
+            $name,
+            request()->boolean('thumbnail')
+        );
 
-        if (!$path || !Storage::disk('local')->exists($path)) {
-            abort(404, 'File not found');
+        if ($response) {
+            return $response;
         }
 
-        return response()->file(
-            Storage::disk('local')->path($path),
-            [
-                'Content-Type' => $mime,
-                'Content-Disposition' => 'inline; filename="' . addslashes($name) . '"',
-                'Cache-Control' => 'private, max-age=86400',
-            ]
-        );
+        return view('attachments.preview-unavailable', [
+            'filename' => $name,
+            'downloadUrl' => route('attachments.download', $attachment),
+        ]);
     }
 }

@@ -1,7 +1,7 @@
 <div class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
      wire:click="close"
      x-data
-     x-init="document.body.style.overflow = 'hidden'"
+     x-init="document.body.style.overflow = 'hidden'; const url = new URL(window.location.href); if (url.searchParams.has('task')) { url.searchParams.delete('task'); window.history.replaceState({}, '', url); }"
      x-destroy="document.body.style.overflow = 'auto'">
     
     <div class="bg-white dark:bg-[#1e1f23] text-slate-900 dark:text-slate-100 rounded-2xl shadow-2xl border border-slate-200 dark:border-[#2f3036] w-full max-w-5xl max-h-[92vh] overflow-hidden flex flex-col"
@@ -128,6 +128,10 @@
                                     $event = $act->event ?? $props['event_type'] ?? '';
                                     $actor = $act->causer;
                                     $actorInitial = $actor ? strtoupper(substr($actor->name, 0, 1)) : '?';
+                                    $oldValue = $props['old'] ?? null;
+                                    $newValue = $props['new'] ?? null;
+                                    $oldValue = is_array($oldValue) ? (json_encode($oldValue) ?: '') : $oldValue;
+                                    $newValue = is_array($newValue) ? (json_encode($newValue) ?: '') : $newValue;
                                 @endphp
                                 <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-50/70 dark:bg-[#16171a] border border-slate-200/70 dark:border-[#2b2c31] transition-all hover:border-slate-300 dark:hover:border-[#383940]">
                                     <!-- Actor Avatar / Event Icon -->
@@ -169,17 +173,17 @@
                                         </div>
 
                                         <!-- Value Changes Badges if old/new exist -->
-                                        @if(isset($props['old']) || isset($props['new']))
+                                        @if($oldValue !== null || $newValue !== null)
                                             <div class="mt-1.5 flex items-center gap-1.5 text-[11px]">
-                                                @if(isset($props['old']) && $props['old'] !== null && $props['old'] !== '')
+                                                @if($oldValue !== null && $oldValue !== '')
                                                     <span class="px-1.5 py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 line-through font-medium border border-rose-200 dark:border-rose-900">
-                                                        {{ $props['old'] }}
+                                                        {{ $oldValue }}
                                                     </span>
                                                     <span class="text-slate-400 text-[10px]">&rarr;</span>
                                                 @endif
-                                                @if(isset($props['new']) && $props['new'] !== null && $props['new'] !== '')
+                                                @if($newValue !== null && $newValue !== '')
                                                     <span class="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-200 dark:border-emerald-900">
-                                                        {{ $props['new'] }}
+                                                        {{ $newValue }}
                                                     </span>
                                                 @endif
                                             </div>
@@ -330,12 +334,26 @@
                         </div>
                     </div>
 
+                    <!-- Start Date -->
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Start Date</label>
+                        <input type="date"
+                               wire:model.live="startDate"
+                               class="w-full text-xs font-semibold bg-white dark:bg-[#202126] border border-slate-200 dark:border-[#35363b] rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        @error('startDate')
+                            <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <!-- Due Date -->
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Due Date</label>
                         <input type="date" 
                                wire:model.live="dueDate"
                                class="w-full text-xs font-semibold bg-white dark:bg-[#202126] border border-slate-200 dark:border-[#35363b] rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        @error('dueDate')
+                            <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <!-- Primary Assignee (Custom ClickUp Dropdown) -->

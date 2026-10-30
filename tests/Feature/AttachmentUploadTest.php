@@ -78,6 +78,44 @@ class AttachmentUploadTest extends TestCase
         Storage::disk('local')->assertExists($attachment->disk_path);
     }
 
+    public function test_image_attachment_can_be_previewed_inline_and_as_a_thumbnail(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('Member');
+
+        $workspace = Workspace::factory()->create();
+        $workspace->users()->attach($user->id);
+        $project = Project::factory()->create([
+            'workspace_id' => $workspace->id,
+            'owner_id' => $user->id,
+        ]);
+        $status = Status::factory()->create(['project_id' => $project->id]);
+        $task = Task::factory()->create([
+            'project_id' => $project->id,
+            'status_id' => $status->id,
+            'creator_id' => $user->id,
+        ]);
+
+        $this->actingAs($user);
+        Livewire::test(AttachmentUpload::class, ['task' => $task])
+            ->set('files', [UploadedFile::fake()->image('preview.png', 640, 480)])
+            ->assertHasNoErrors();
+
+        $attachment = Attachment::firstOrFail();
+        $preview = $this->get(route('attachments.preview', $attachment));
+        $this->assertSame(200, $preview->getStatusCode(), json_encode($preview->headers->all()) ?: '');
+        $preview
+            ->assertHeader('Content-Disposition', 'inline; filename=preview.png')
+            ->assertHeader('X-Content-Type-Options', 'nosniff');
+        $this->assertStringStartsWith('image/', $preview->headers->get('Content-Type'));
+
+        $thumbnail = $this->get(route('attachments.preview', $attachment).'?thumbnail=1');
+        $thumbnail->assertOk()
+            ->assertHeader('Content-Disposition', 'inline')
+            ->assertHeader('X-Content-Type-Options', 'nosniff');
+        $this->assertStringStartsWith('image/', $thumbnail->headers->get('Content-Type'));
+    }
+
     public function test_user_can_download_and_delete_attachment(): void
     {
         $user = User::factory()->create();
