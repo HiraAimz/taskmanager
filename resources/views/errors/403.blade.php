@@ -41,8 +41,9 @@
         <div class="flex items-center justify-center gap-3 pt-2">
             <button onclick="window.history.length > 1 ? window.history.back() : window.location.href='{{ route('dashboard') }}'" 
                     type="button" 
-                    class="px-4 py-2.5 text-xs font-semibold rounded-xl bg-white dark:bg-[#1e1f23] border border-slate-200 dark:border-[#35363b] text-slate-700 dark:text-slate-300 hover:border-purple-400 shadow-2xs transition-colors">
-                ← Go Back
+                    class="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold rounded-xl bg-white dark:bg-[#1e1f23] border border-slate-200 dark:border-[#35363b] text-slate-700 dark:text-slate-300 hover:border-purple-400 shadow-2xs transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                <span>Go Back</span>
             </button>
             <a href="{{ route('dashboard') }}" 
                class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-clickup-gradient text-white text-xs font-semibold rounded-xl shadow-md hover:opacity-95 transition-all">

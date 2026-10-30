@@ -156,7 +156,7 @@
 
                             @if($status->tasks_count > 0)
                                 <select wire:model="moveToStatusId" 
-                                        class="w-full text-xs bg-white dark:bg-[#1e1f23] border border-rose-300 dark:border-rose-800 rounded-lg px-3 py-1.5 text-slate-800 dark:text-slate-200">
+                                        class="form-select w-full text-xs bg-white dark:bg-[#1e1f23] border border-rose-300 dark:border-rose-800 rounded-lg px-3 py-1.5 text-slate-800 dark:text-slate-200">
                                     <option value="">-- Choose destination status --</option>
                                     @foreach($statuses as $dest)
                                         @if($dest->id !== $status->id)

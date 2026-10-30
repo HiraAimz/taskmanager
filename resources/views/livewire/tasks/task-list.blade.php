@@ -53,33 +53,230 @@
                     </svg>
                 </div>
 
-                <!-- Status Filter -->
-                <select wire:model.live="filterStatus" 
-                        class="text-xs bg-slate-50 dark:bg-[#25262a] border border-slate-200 dark:border-[#35363b] rounded-lg pl-3 pr-8 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium">
-                    <option value="">Status: All</option>
-                    @foreach($statuses as $status)
-                        <option value="{{ $status->id }}">{{ $status->name }}</option>
-                    @endforeach
-                </select>
+                <!-- Status Filter (Custom ClickUp Dropdown) -->
+                <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false">
+                    <select wire:model.live="filterStatus" class="sr-only" tabindex="-1">
+                        <option value="">Status: All</option>
+                        @foreach($statuses as $status)
+                            <option value="{{ $status->id }}">{{ $status->name }}</option>
+                        @endforeach
+                    </select>
 
-                <!-- Assignee Filter -->
-                <select wire:model.live="filterAssignee" 
-                        class="text-xs bg-slate-50 dark:bg-[#25262a] border border-slate-200 dark:border-[#35363b] rounded-lg pl-3 pr-8 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium">
-                    <option value="">Assignee: All</option>
-                    @foreach($workspaceMembers as $member)
-                        <option value="{{ $member->id }}">{{ $member->name }}</option>
-                    @endforeach
-                </select>
+                    @php
+                        $selectedStatus = $statuses->firstWhere('id', (int)$filterStatus);
+                    @endphp
+                    <button type="button" 
+                            @click="open = !open" 
+                            class="inline-flex items-center gap-2 text-xs bg-slate-50 dark:bg-[#25262a] border border-slate-200 dark:border-[#35363b] rounded-lg px-3 py-1.5 text-slate-700 dark:text-slate-200 hover:border-purple-400 dark:hover:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500/20 font-medium transition-all shadow-2xs">
+                        <span class="inline-flex items-center gap-1.5 truncate max-w-[130px]">
+                            @if($selectedStatus)
+                                <span class="w-2 h-2 rounded-full shrink-0" style="background-color: {{ $selectedStatus->color }}"></span>
+                                <span class="truncate">{{ $selectedStatus->name }}</span>
+                            @else
+                                <span>Status: All</span>
+                            @endif
+                        </span>
+                        <svg class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
 
-                <!-- Priority Filter -->
-                <select wire:model.live="filterPriority" 
-                        class="text-xs bg-slate-50 dark:bg-[#25262a] border border-slate-200 dark:border-[#35363b] rounded-lg pl-3 pr-8 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 font-medium">
-                    <option value="">Priority: All</option>
-                    <option value="urgent">● Urgent</option>
-                    <option value="high">● High</option>
-                    <option value="normal">● Normal</option>
-                    <option value="low">○ Low</option>
-                </select>
+                    <div x-show="open" 
+                         x-cloak
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
+                         class="absolute z-50 left-0 mt-1.5 min-w-[160px] bg-white dark:bg-[#1e1f23] border border-slate-200 dark:border-[#35363b] rounded-xl shadow-xl dark:shadow-2xl p-1 text-xs space-y-0.5">
+                        <button type="button" 
+                                @click="$wire.set('filterStatus', ''); open = false" 
+                                class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors {{ empty($filterStatus) ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-semibold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#28292d]' }}">
+                            <span>Status: All</span>
+                            @if(empty($filterStatus))
+                                <svg class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            @endif
+                        </button>
+                        @foreach($statuses as $st)
+                            @php
+                                $isStatusSelected = (int)$filterStatus === (int)$st->id;
+                            @endphp
+                            <button type="button" 
+                                    @click="$wire.set('filterStatus', '{{ $st->id }}'); open = false" 
+                                    class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors {{ $isStatusSelected ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-semibold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#28292d]' }}">
+                                <span class="inline-flex items-center gap-2 truncate">
+                                    <span class="w-2 h-2 rounded-full shrink-0" style="background-color: {{ $st->color }}"></span>
+                                    <span class="truncate">{{ $st->name }}</span>
+                                </span>
+                                @if($isStatusSelected)
+                                    <svg class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                @endif
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+
+                <!-- Assignee Filter (Custom ClickUp Dropdown) -->
+                <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false">
+                    <select wire:model.live="filterAssignee" class="sr-only" tabindex="-1">
+                        <option value="">Assignee: All</option>
+                        @foreach($workspaceMembers as $member)
+                            <option value="{{ $member->id }}">{{ $member->name }}</option>
+                        @endforeach
+                    </select>
+
+                    @php
+                        $selectedMember = $workspaceMembers->firstWhere('id', (int)$filterAssignee);
+                    @endphp
+                    <button type="button" 
+                            @click="open = !open" 
+                            class="inline-flex items-center gap-2 text-xs bg-slate-50 dark:bg-[#25262a] border border-slate-200 dark:border-[#35363b] rounded-lg px-3 py-1.5 text-slate-700 dark:text-slate-200 hover:border-purple-400 dark:hover:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500/20 font-medium transition-all shadow-2xs">
+                        <span class="inline-flex items-center gap-1.5 truncate max-w-[130px]">
+                            @if($selectedMember)
+                                <span class="w-4 h-4 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300 font-bold text-[10px] flex items-center justify-center shrink-0">
+                                    {{ strtoupper(substr($selectedMember->name, 0, 1)) }}
+                                </span>
+                                <span class="truncate">{{ $selectedMember->name }}</span>
+                            @else
+                                <span>Assignee: All</span>
+                            @endif
+                        </span>
+                        <svg class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+
+                    <div x-show="open" 
+                         x-cloak
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
+                         class="absolute z-50 left-0 mt-1.5 min-w-[180px] max-h-60 overflow-y-auto bg-white dark:bg-[#1e1f23] border border-slate-200 dark:border-[#35363b] rounded-xl shadow-xl dark:shadow-2xl p-1 text-xs space-y-0.5">
+                        <button type="button" 
+                                @click="$wire.set('filterAssignee', ''); open = false" 
+                                class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors {{ empty($filterAssignee) ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-semibold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#28292d]' }}">
+                            <span>Assignee: All</span>
+                            @if(empty($filterAssignee))
+                                <svg class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            @endif
+                        </button>
+                        @foreach($workspaceMembers as $member)
+                            @php
+                                $isMemberSelected = (int)$filterAssignee === (int)$member->id;
+                            @endphp
+                            <button type="button" 
+                                    @click="$wire.set('filterAssignee', '{{ $member->id }}'); open = false" 
+                                    class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors {{ $isMemberSelected ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-semibold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#28292d]' }}">
+                                <span class="inline-flex items-center gap-2 truncate">
+                                    <span class="w-4 h-4 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300 font-bold text-[10px] flex items-center justify-center shrink-0">
+                                        {{ strtoupper(substr($member->name, 0, 1)) }}
+                                    </span>
+                                    <span class="truncate">{{ $member->name }}</span>
+                                </span>
+                                @if($isMemberSelected)
+                                    <svg class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                @endif
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+
+                <!-- Priority Filter (Custom ClickUp Dropdown) -->
+                <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false">
+                    <select wire:model.live="filterPriority" class="sr-only" tabindex="-1">
+                        <option value="">Priority: All</option>
+                        <option value="urgent">Urgent</option>
+                        <option value="high">High</option>
+                        <option value="normal">Normal</option>
+                        <option value="low">Low</option>
+                    </select>
+
+                    <button type="button" 
+                            @click="open = !open" 
+                            class="inline-flex items-center gap-2 text-xs bg-slate-50 dark:bg-[#25262a] border border-slate-200 dark:border-[#35363b] rounded-lg px-3 py-1.5 text-slate-700 dark:text-slate-200 hover:border-purple-400 dark:hover:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500/20 font-medium transition-all shadow-2xs">
+                        <span class="inline-flex items-center gap-1.5">
+                            @if($filterPriority === 'urgent')
+                                <span class="priority-dot bg-rose-500"></span>
+                                <span>Urgent</span>
+                            @elseif($filterPriority === 'high')
+                                <span class="priority-dot bg-amber-500"></span>
+                                <span>High</span>
+                            @elseif($filterPriority === 'normal')
+                                <span class="priority-dot bg-blue-500"></span>
+                                <span>Normal</span>
+                            @elseif($filterPriority === 'low')
+                                <span class="priority-dot bg-slate-400"></span>
+                                <span>Low</span>
+                            @else
+                                <span>Priority: All</span>
+                            @endif
+                        </span>
+                        <svg class="w-3.5 h-3.5 text-slate-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+
+                    <div x-show="open" 
+                         x-cloak
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
+                         class="absolute z-50 left-0 mt-1.5 min-w-[160px] bg-white dark:bg-[#1e1f23] border border-slate-200 dark:border-[#35363b] rounded-xl shadow-xl dark:shadow-2xl p-1 text-xs space-y-0.5">
+                        <button type="button" 
+                                @click="$wire.set('filterPriority', ''); open = false" 
+                                class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors {{ empty($filterPriority) ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-semibold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#28292d]' }}">
+                            <span>Priority: All</span>
+                            @if(empty($filterPriority))
+                                <svg class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            @endif
+                        </button>
+                        <button type="button" 
+                                @click="$wire.set('filterPriority', 'urgent'); open = false" 
+                                class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors {{ $filterPriority === 'urgent' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-semibold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#28292d]' }}">
+                            <span class="inline-flex items-center gap-2">
+                                <span class="priority-dot bg-rose-500"></span>
+                                <span>Urgent</span>
+                            </span>
+                            @if($filterPriority === 'urgent')
+                                <svg class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            @endif
+                        </button>
+                        <button type="button" 
+                                @click="$wire.set('filterPriority', 'high'); open = false" 
+                                class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors {{ $filterPriority === 'high' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-semibold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#28292d]' }}">
+                            <span class="inline-flex items-center gap-2">
+                                <span class="priority-dot bg-amber-500"></span>
+                                <span>High</span>
+                            </span>
+                            @if($filterPriority === 'high')
+                                <svg class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            @endif
+                        </button>
+                        <button type="button" 
+                                @click="$wire.set('filterPriority', 'normal'); open = false" 
+                                class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors {{ $filterPriority === 'normal' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-semibold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#28292d]' }}">
+                            <span class="inline-flex items-center gap-2">
+                                <span class="priority-dot bg-blue-500"></span>
+                                <span>Normal</span>
+                            </span>
+                            @if($filterPriority === 'normal')
+                                <svg class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            @endif
+                        </button>
+                        <button type="button" 
+                                @click="$wire.set('filterPriority', 'low'); open = false" 
+                                class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left transition-colors {{ $filterPriority === 'low' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-semibold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#28292d]' }}">
+                            <span class="inline-flex items-center gap-2">
+                                <span class="priority-dot bg-slate-400"></span>
+                                <span>Low</span>
+                            </span>
+                            @if($filterPriority === 'low')
+                                <svg class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            @endif
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Add Task Button -->
                 @can('create', [\App\Models\Task::class, $project])
@@ -107,7 +304,11 @@
                                     <div class="flex items-center gap-1.5">
                                         <span>Task Title</span>
                                         @if($sortField === 'title')
-                                            <span>{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                                            @if($sortDirection === 'asc')
+                                                <svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+                                            @else
+                                                <svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                                            @endif
                                         @endif
                                     </div>
                                 </th>
@@ -116,7 +317,11 @@
                                     <div class="flex items-center gap-1.5">
                                         <span>Priority</span>
                                         @if($sortField === 'priority')
-                                            <span>{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                                            @if($sortDirection === 'asc')
+                                                <svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+                                            @else
+                                                <svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                                            @endif
                                         @endif
                                     </div>
                                 </th>
@@ -125,7 +330,11 @@
                                     <div class="flex items-center gap-1.5">
                                         <span>Due Date</span>
                                         @if($sortField === 'due_date')
-                                            <span>{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                                            @if($sortDirection === 'asc')
+                                                <svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/></svg>
+                                            @else
+                                                <svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                                            @endif
                                         @endif
                                     </div>
                                 </th>
@@ -174,20 +383,20 @@
                                     <!-- Priority Badge -->
                                     <td class="px-5 py-3 whitespace-nowrap">
                                         @if($task->priority->value === 'urgent')
-                                            <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
-                                                ● Urgent
+                                            <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
+                                                <span class="priority-dot bg-rose-500"></span> Urgent
                                             </span>
                                         @elseif($task->priority->value === 'high')
-                                            <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                                                ● High
+                                            <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                                                <span class="priority-dot bg-amber-500"></span> High
                                             </span>
                                         @elseif($task->priority->value === 'normal')
-                                            <span class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                                                ● Normal
+                                            <span class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                                                <span class="priority-dot bg-blue-500"></span> Normal
                                             </span>
                                         @else
-                                            <span class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
-                                                ○ Low
+                                            <span class="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                                                <span class="priority-dot bg-slate-400"></span> Low
                                             </span>
                                         @endif
                                     </td>

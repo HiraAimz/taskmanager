@@ -185,3 +185,67 @@
 .dark ::-webkit-scrollbar-thumb:hover {
     background: #475569;
 }
+
+/* ─── Standardized Form Controls ─────────────────────────────────────── */
+
+/* Color Scheme System for Native Controls */
+:root {
+    color-scheme: light;
+}
+
+.dark {
+    color-scheme: dark;
+}
+
+select {
+    color-scheme: light;
+}
+
+.dark select {
+    color-scheme: dark;
+}
+
+select option {
+    background-color: #ffffff;
+    color: #0f172a;
+    padding: 6px 10px;
+}
+
+.dark select option {
+    background-color: #1e1f23;
+    color: #f1f5f9;
+}
+
+/* Styled select — removes native OS chevron, adds custom SVG arrow */
+.form-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.625rem center;
+    background-size: 1rem 1rem;
+    padding-right: 2.25rem;
+    cursor: pointer;
+}
+
+.dark .form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+}
+
+/* Standardized focus states matching ClickUp purple theme */
+.form-select:focus,
+.form-input:focus,
+.form-textarea:focus {
+    outline: none !important;
+    border-color: #7b68ee !important;
+    box-shadow: 0 0 0 3px rgba(123, 104, 238, 0.2) !important;
+}
+
+/* Priority dot — small SVG-like filled circle for priority badges */
+.priority-dot {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    flex-shrink: 0;
+}

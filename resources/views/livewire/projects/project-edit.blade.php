@@ -115,7 +115,7 @@
                 <div class="flex flex-col sm:flex-row gap-2.5 pb-5 border-b border-slate-100 dark:border-[#25262c]">
                     <div class="flex-1">
                         <select wire:model="selectedUserId"
-                                class="w-full text-xs font-semibold bg-slate-50 dark:bg-[#16171a] border border-slate-200 dark:border-[#2f3036] rounded-xl px-3.5 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                class="form-select w-full text-xs font-semibold bg-slate-50 dark:bg-[#16171a] border border-slate-200 dark:border-[#2f3036] rounded-xl px-3.5 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
                             <option value="">Select a user from {{ $project->workspace->name }}...</option>
                             @foreach($availableUsers as $wsUser)
                                 <option value="{{ $wsUser->id }}">{{ $wsUser->name }} ({{ $wsUser->email }})</option>
@@ -124,7 +124,7 @@
                     </div>
                     <div class="w-32">
                         <select wire:model="selectedRole" 
-                                class="w-full text-xs font-semibold bg-slate-50 dark:bg-[#16171a] border border-slate-200 dark:border-[#2f3036] rounded-xl px-3 py-2 text-slate-900 dark:text-white">
+                                class="form-select w-full text-xs font-semibold bg-slate-50 dark:bg-[#16171a] border border-slate-200 dark:border-[#2f3036] rounded-xl px-3 py-2 text-slate-900 dark:text-white">
                             <option value="member">Member</option>
                             <option value="admin">Project Admin</option>
                         </select>

@@ -37,7 +37,7 @@
                 <div>
                     <label for="role" class="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">System Role *</label>
                     <select id="role" wire:model="role" 
-                            class="w-full text-xs font-semibold bg-slate-50 dark:bg-[#16171a] border border-slate-200 dark:border-[#2f3036] rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500" required>
+                            class="form-select w-full text-xs font-semibold bg-slate-50 dark:bg-[#16171a] border border-slate-200 dark:border-[#2f3036] rounded-xl px-3 py-2 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500" required>
                         <option value="">Select a role</option>
                         @foreach($roles as $roleOption)
                             <option value="{{ $roleOption->name ?? $roleOption->value }}">{{ $roleOption->name ?? $roleOption->value }}</option>

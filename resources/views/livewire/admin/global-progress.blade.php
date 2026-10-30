@@ -89,10 +89,10 @@
 
                     <!-- Workload Filter -->
                     <select wire:model.live="filterWorkload" 
-                            class="text-xs bg-slate-50 dark:bg-[#242529] border border-slate-200 dark:border-[#35363b] rounded-xl px-2.5 py-1.5 text-slate-700 dark:text-slate-300 font-medium">
+                            class="form-select text-xs bg-slate-50 dark:bg-[#242529] border border-slate-200 dark:border-[#35363b] rounded-xl px-2.5 py-1.5 text-slate-700 dark:text-slate-300 font-medium">
                         <option value="all">All Workspaces</option>
                         <option value="has_overdue">With Overdue Tasks</option>
-                        <option value="high_completion">⭐ High Completion (≥80%)</option>
+                        <option value="high_completion">High Completion (≥80%)</option>
                     </select>
                 </div>
             </div>
@@ -105,22 +105,52 @@
                             <th class="px-5 py-3.5">Workspace</th>
                             <th class="px-4 py-3.5">Owner</th>
                             <th wire:click="sortBy('projects_count')" class="px-4 py-3.5 text-center cursor-pointer hover:text-purple-600 transition-colors">
-                                Projects {!! $sortField === 'projects_count' ? ($sortDirection === 'asc' ? '↑' : '↓') : '' !!}
+                                <span class="inline-flex items-center justify-center gap-1">
+                                    <span>Projects</span>
+                                    @if($sortField === 'projects_count')
+                                        <svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}"/></svg>
+                                    @endif
+                                </span>
                             </th>
                             <th wire:click="sortBy('users_count')" class="px-4 py-3.5 text-center cursor-pointer hover:text-purple-600 transition-colors">
-                                Members {!! $sortField === 'users_count' ? ($sortDirection === 'asc' ? '↑' : '↓') : '' !!}
+                                <span class="inline-flex items-center justify-center gap-1">
+                                    <span>Members</span>
+                                    @if($sortField === 'users_count')
+                                        <svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}"/></svg>
+                                    @endif
+                                </span>
                             </th>
                             <th wire:click="sortBy('tasks_count')" class="px-4 py-3.5 text-center cursor-pointer hover:text-purple-600 transition-colors">
-                                Total Tasks {!! $sortField === 'tasks_count' ? ($sortDirection === 'asc' ? '↑' : '↓') : '' !!}
+                                <span class="inline-flex items-center justify-center gap-1">
+                                    <span>Total Tasks</span>
+                                    @if($sortField === 'tasks_count')
+                                        <svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}"/></svg>
+                                    @endif
+                                </span>
                             </th>
                             <th wire:click="sortBy('completed_count')" class="px-4 py-3.5 text-center cursor-pointer hover:text-purple-600 transition-colors">
-                                Completed {!! $sortField === 'completed_count' ? ($sortDirection === 'asc' ? '↑' : '↓') : '' !!}
+                                <span class="inline-flex items-center justify-center gap-1">
+                                    <span>Completed</span>
+                                    @if($sortField === 'completed_count')
+                                        <svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}"/></svg>
+                                    @endif
+                                </span>
                             </th>
                             <th wire:click="sortBy('overdue_count')" class="px-4 py-3.5 text-center cursor-pointer hover:text-purple-600 transition-colors">
-                                Overdue {!! $sortField === 'overdue_count' ? ($sortDirection === 'asc' ? '↑' : '↓') : '' !!}
+                                <span class="inline-flex items-center justify-center gap-1">
+                                    <span>Overdue</span>
+                                    @if($sortField === 'overdue_count')
+                                        <svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}"/></svg>
+                                    @endif
+                                </span>
                             </th>
                             <th wire:click="sortBy('completion_rate')" class="px-6 py-3.5 min-w-[180px] cursor-pointer hover:text-purple-600 transition-colors">
-                                Completion Rate {!! $sortField === 'completion_rate' ? ($sortDirection === 'asc' ? '↑' : '↓') : '' !!}
+                                <span class="inline-flex items-center justify-center gap-1">
+                                    <span>Completion Rate</span>
+                                    @if($sortField === 'completion_rate')
+                                        <svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}"/></svg>
+                                    @endif
+                                </span>
                             </th>
                             <th class="px-5 py-3.5 text-right">Action</th>
                         </tr>

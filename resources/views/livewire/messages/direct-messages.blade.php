@@ -185,7 +185,7 @@
                                                             <a href="{{ route('message-attachments.preview', $img) }}" target="_blank" class="block overflow-hidden cursor-zoom-in">
                                                                 <img src="{{ route('message-attachments.preview', $img) }}" 
                                                                      alt="{{ $img->original_name }}"
-                                                                     @error="failed = true"
+                                                                     x-on:error="failed = true"
                                                                      loading="lazy"
                                                                      class="max-h-52 w-full object-cover rounded-xl group-hover:scale-102 transition-transform duration-200">
                                                             </a>

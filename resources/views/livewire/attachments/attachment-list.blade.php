@@ -51,7 +51,7 @@
                                 <a href="{{ route('attachments.preview', $attachment) }}" target="_blank" class="block w-full h-full cursor-zoom-in">
                                     <img src="{{ route('attachments.preview', $attachment) }}" 
                                          alt="{{ $attachment->file_name }}"
-                                         @error="imgFailed = true"
+                                         x-on:error="imgFailed = true"
                                          loading="lazy"
                                          class="w-full h-full object-cover">
                                 </a>

@@ -196,20 +196,20 @@
                         <!-- Right: Priority & Tags -->
                         <div class="flex items-center gap-2 self-start sm:self-center">
                             @if($task->priority->value === 'urgent')
-                                <span class="px-2 py-0.5 rounded text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
-                                    ● Urgent
+                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
+                                    <span class="priority-dot bg-rose-500"></span> Urgent
                                 </span>
                             @elseif($task->priority->value === 'high')
-                                <span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
-                                    ● High
+                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                                    <span class="priority-dot bg-amber-500"></span> High
                                 </span>
                             @elseif($task->priority->value === 'normal')
-                                <span class="px-2 py-0.5 rounded text-xs font-medium bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                                    ● Normal
+                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                                    <span class="priority-dot bg-blue-500"></span> Normal
                                 </span>
                             @else
-                                <span class="px-2 py-0.5 rounded text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
-                                    ○ Low
+                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                                    <span class="priority-dot bg-slate-400"></span> Low
                                 </span>
                             @endif
                         </div>

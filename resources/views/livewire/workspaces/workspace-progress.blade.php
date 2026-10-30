@@ -30,7 +30,7 @@
                 @if($switchableWorkspaces->count() > 1)
                     <div class="relative">
                         <select wire:change="switchWorkspace($event.target.value)" 
-                                class="text-xs font-semibold bg-white dark:bg-[#1a1b1e] border border-slate-200 dark:border-[#2f3036] rounded-xl px-3 py-2 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-2xs">
+                                class="form-select text-xs font-semibold bg-white dark:bg-[#1a1b1e] border border-slate-200 dark:border-[#2f3036] rounded-xl px-3 py-2 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-2xs">
                             @foreach($switchableWorkspaces as $ws)
                                 <option value="{{ $ws->id }}" @selected($ws->id === $workspace->id)>
                                     {{ $ws->name }} {{ $ws->owner_id === auth()->id() ? '(Owner)' : '' }}
@@ -73,7 +73,7 @@
 
             <!-- Custom Date Range Inputs -->
             <div class="flex items-center gap-2">
-                <select wire:model.live="dateField" class="text-xs bg-slate-50 dark:bg-[#242529] border border-slate-200 dark:border-[#35363b] rounded-lg px-2 py-1 text-slate-700 dark:text-slate-300 font-medium">
+                <select wire:model.live="dateField" class="form-select text-xs bg-slate-50 dark:bg-[#242529] border border-slate-200 dark:border-[#35363b] rounded-lg px-2 py-1 text-slate-700 dark:text-slate-300 font-medium">
                     <option value="due_date">Due Date</option>
                     <option value="completed_at">Completed Date</option>
                     <option value="created_at">Created Date</option>
@@ -322,7 +322,7 @@
 
                     <!-- Project Filter -->
                     <select wire:model.live="selectedProjectId" 
-                            class="text-xs bg-slate-50 dark:bg-[#242529] border border-slate-200 dark:border-[#35363b] rounded-xl px-2.5 py-1.5 text-slate-700 dark:text-slate-300 font-medium">
+                            class="form-select text-xs bg-slate-50 dark:bg-[#242529] border border-slate-200 dark:border-[#35363b] rounded-xl px-2.5 py-1.5 text-slate-700 dark:text-slate-300 font-medium">
                         <option value="">All Projects</option>
                         @foreach($projects as $p)
                             <option value="{{ $p->id }}">{{ $p->name }}</option>
@@ -331,7 +331,7 @@
 
                     <!-- Member Filter -->
                     <select wire:model.live="selectedMemberId" 
-                            class="text-xs bg-slate-50 dark:bg-[#242529] border border-slate-200 dark:border-[#35363b] rounded-xl px-2.5 py-1.5 text-slate-700 dark:text-slate-300 font-medium">
+                            class="form-select text-xs bg-slate-50 dark:bg-[#242529] border border-slate-200 dark:border-[#35363b] rounded-xl px-2.5 py-1.5 text-slate-700 dark:text-slate-300 font-medium">
                         <option value="">All Assignees</option>
                         @foreach($members as $mem)
                             <option value="{{ $mem->id }}">{{ $mem->name }}</option>
@@ -340,7 +340,7 @@
 
                     <!-- Status Filter -->
                     <select wire:model.live="selectedStatusType" 
-                            class="text-xs bg-slate-50 dark:bg-[#242529] border border-slate-200 dark:border-[#35363b] rounded-xl px-2.5 py-1.5 text-slate-700 dark:text-slate-300 font-medium">
+                            class="form-select text-xs bg-slate-50 dark:bg-[#242529] border border-slate-200 dark:border-[#35363b] rounded-xl px-2.5 py-1.5 text-slate-700 dark:text-slate-300 font-medium">
                         <option value="">Status: All</option>
                         <option value="todo">Pending / To Do</option>
                         <option value="in_progress">In Progress</option>
@@ -349,12 +349,12 @@
 
                     <!-- Priority Filter -->
                     <select wire:model.live="selectedPriority" 
-                            class="text-xs bg-slate-50 dark:bg-[#242529] border border-slate-200 dark:border-[#35363b] rounded-xl px-2.5 py-1.5 text-slate-700 dark:text-slate-300 font-medium">
+                            class="form-select text-xs bg-slate-50 dark:bg-[#242529] border border-slate-200 dark:border-[#35363b] rounded-xl px-2.5 py-1.5 text-slate-700 dark:text-slate-300 font-medium">
                         <option value="">Priority: All</option>
-                        <option value="urgent">● Urgent</option>
-                        <option value="high">● High</option>
-                        <option value="normal">● Normal</option>
-                        <option value="low"><svg class="w-3 h-3 inline text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" stroke-width="2"/></svg> Low</option>
+                        <option value="urgent">Urgent</option>
+                        <option value="high">High</option>
+                        <option value="normal">Normal</option>
+                        <option value="low">Low</option>
                     </select>
                 </div>
             </div>
@@ -365,16 +365,31 @@
                     <thead>
                         <tr class="bg-slate-50/80 dark:bg-[#202126] border-b border-slate-200 dark:border-[#28292d] text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                             <th wire:click="sortBy('title')" class="px-5 py-3 cursor-pointer hover:text-purple-600 transition-colors">
-                                Task Title {!! $sortField === 'title' ? ($sortDirection === 'asc' ? '↑' : '↓') : '' !!}
+                                <span class="inline-flex items-center gap-1">
+                                    <span>Task Title</span>
+                                    @if($sortField === 'title')
+                                        <svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}"/></svg>
+                                    @endif
+                                </span>
                             </th>
                             <th class="px-4 py-3">Project</th>
                             <th class="px-4 py-3">Assignees</th>
                             <th class="px-4 py-3">Status</th>
                             <th wire:click="sortBy('priority')" class="px-4 py-3 cursor-pointer hover:text-purple-600 transition-colors">
-                                Priority {!! $sortField === 'priority' ? ($sortDirection === 'asc' ? '↑' : '↓') : '' !!}
+                                <span class="inline-flex items-center gap-1">
+                                    <span>Priority</span>
+                                    @if($sortField === 'priority')
+                                        <svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}"/></svg>
+                                    @endif
+                                </span>
                             </th>
                             <th wire:click="sortBy('due_date')" class="px-4 py-3 cursor-pointer hover:text-purple-600 transition-colors">
-                                Due Date {!! $sortField === 'due_date' ? ($sortDirection === 'asc' ? '↑' : '↓') : '' !!}
+                                <span class="inline-flex items-center gap-1">
+                                    <span>Due Date</span>
+                                    @if($sortField === 'due_date')
+                                        <svg class="w-3 h-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="{{ $sortDirection === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}"/></svg>
+                                    @endif
+                                </span>
                             </th>
                             <th class="px-4 py-3 text-right">Inspect</th>
                         </tr>
